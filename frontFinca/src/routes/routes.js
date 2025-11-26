@@ -12,7 +12,11 @@ const routes = [
     path: '/',
     component: () => import('../pages/House.vue')
   },
-  
+  {
+    path: '/productos',
+    name: 'productos',
+    component: () => import('../pages/Productos.vue')
+  },
   {
     path: '/login',
     component: () => import('../componentes/Login.vue'),
@@ -27,24 +31,25 @@ const routes = [
   {
     path: '/categoria',
     name: 'categoria',
-    component: () => import('../pages/Categoria.vue'),
+    component: () => import('../tablasAdm/Categoria.vue'),
     meta: { requiresAdmin: true }
   },
-  {
-    path: '/marca',
-    name: 'marca',
-    component: () => import('../pages/Marca.vue'),
+    {
+    path: '/finca',
+    name: 'finca',
+    component: () => import('../tablasAdm/Finca.vue'),
     meta: { requiresAdmin: true }
-  },
-{
-    path: '/carrito',
-    component: () => import('../componentes/carrito.vue'),
-    // meta: { requiresAdmin: true }
   },
   {
     path: '/producto',
     name: 'producto',
-    component: () => import('../pages/Producto.vue'),
+    component: () => import('../tablasAdm/Producto.vue'),
+    meta: { requiresAdmin: true }
+  },
+    {
+    path: '/publicacion',
+    name: 'publicacion',
+    component: () => import('../tablasAdm/Publicacion.vue'),
     meta: { requiresAdmin: true }
   },
   // Puedes agregar más rutas aquí según tus necesidades
@@ -69,4 +74,3 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
-

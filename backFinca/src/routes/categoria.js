@@ -18,20 +18,22 @@ router.post("/crear", [
     check('descripcion', 'La descripción es obligatoria').not().isEmpty(),
     check('descripcion', 'La descripción debe tener máximo 200 caracteres').isLength({ max: 200 }),
     check('icono', 'El icono debe ser una cadena válida').optional().isString(),
-    check('color', 'El color debe ser un código hexadecimal válido').optional().matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/),
     check('orden', 'El orden debe ser un número entero').optional().isInt({ min: 0 }),
     validarCampos
 ], httpCategorias.postCrearCategoria);
+
 
 // Listar todas las categorías
 router.get("/listarCategorias", [
     validarCampos,
 ], httpCategorias.getCategorias);
 
+
 // Listar categorías activas (para frontend)
 router.get("/activas", [
     validarCampos,
 ], httpCategorias.getCategoriasActivas);
+
 
 // Listar categoría por ID
 router.get('/listarpor/:id', [
@@ -39,6 +41,7 @@ router.get('/listarpor/:id', [
     check('id').custom(CategoriaHelper.existeCategoriaPorId),
     validarCampos
 ], httpCategorias.getCategoriaPorId);
+
 
 // Editar categoría por ID
 router.put('/editar/:id', [
@@ -49,7 +52,6 @@ router.put('/editar/:id', [
     check('nombre', 'El nombre debe tener entre 2 y 50 caracteres').optional().isLength({ min: 2, max: 50 }),
     check('descripcion', 'La descripción debe tener máximo 200 caracteres').optional().isLength({ max: 200 }),
     check('icono', 'El icono debe ser una cadena válida').optional().isString(),
-    check('color', 'El color debe ser un código hexadecimal válido').optional().matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/),
     check('orden', 'El orden debe ser un número entero').optional().isInt({ min: 0 }),
     validarCampos
 ], httpCategorias.putEditarCategoria);

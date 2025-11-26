@@ -65,12 +65,33 @@
             />
           </q-td>
         </template>
+        <template v-slot:body-cell-esOrganico="props">
+          <q-td>
+            <q-icon 
+              :name="props.row.esOrganico ? 'check_circle' : 'cancel'" 
+              :color="props.row.esOrganico ? 'positive' : 'grey'" 
+              size="sm"
+            />
+          </q-td>
+        </template>
+        <template v-slot:body-cell-destacado="props">
+          <q-td>
+            <q-icon 
+              :name="props.row.destacado ? 'star' : 'star_border'" 
+              :color="props.row.destacado ? 'orange' : 'grey'" 
+              size="sm"
+            />
+          </q-td>
+        </template>
         <template v-slot:body-cell-estado="props">
           <q-td>
-            <span :class="{'text-positive': props.row.estado === 1, 'text-negative': props.row.estado === 0}">
+            <q-chip 
+              :color="props.row.estado === 1 ? 'positive' : 'negative'" 
+              text-color="white" 
+              size="sm"
+            >
               {{ props.row.estado === 1 ? 'Activo' : 'Inactivo' }}
-            </span>
-        
+            </q-chip>
           </q-td>
         </template>
         <template v-slot:body-cell-opciones="props">
@@ -120,12 +141,21 @@
           <q-separator />
           <q-card-section style="max-height: 60vh" class="scroll">
             <q-form ref="formProducto" class="q-gutter-md">
-              <q-input filled v-model="nombre" label="Nombre" :dense="dense" :rules="[req]" />
+              <q-input filled v-model="nombre" label="Nombre *" :dense="dense" :rules="[req]" />
+
+              <q-input 
+                filled 
+                v-model="descripcion" 
+                label="Descripción" 
+                type="textarea" 
+                :dense="dense" 
+                rows="3"
+              />
 
               <q-select
                 v-model="categoria_id"
                 :options="categoriasOptions"
-                label="Categoría"
+                label="Categoría *"
                 option-label="nombre"
                 option-value="_id"
                 emit-value
@@ -134,51 +164,47 @@
                 outlined
                 :rules="[req]"
               />
-              <q-select
-                v-model="marca_id"
-                :options="marcasOptions"
-                label="Marca"
-                option-label="nombre"
-                option-value="_id"
-                emit-value
-                map-options
-                :dense="dense"
-                outlined
-                :rules="[req]"
-              />
-              <q-input filled v-model="referencia" label="Referencia" :dense="dense" />
-              <q-input filled v-model="precio" label="Precio" type="number" :dense="dense" :rules="[req]" />
-              <q-input filled v-model="capacidad" label="Capacidad" :dense="dense" />
-              <q-input filled v-model="cantidad" label="Cantidad" type="number" :dense="dense" :rules="[req]" />
-              <q-toggle v-model="destacado" label="Destacado" />
-              <q-toggle v-model="estado" label="Activo" true-value="1" false-value="0" />
-              
-              <!-- Especificaciones solo editables, sin agregar ni eliminar claves -->
-              <div class="q-mb-md">
-                <div class="text-caption text-grey-7 q-mb-xs">Especificaciones</div>
-                <div v-for="(label, clave) in especificacionesModelo" :key="clave" class="row q-col-gutter-xs q-mb-xs">
-                  <div class="col-12">
-                    <q-input
-                      dense
-                      outlined
-                      v-model="especificaciones[clave]"
-                      :label="label"
-                      :rules="[clave === 'ram' || clave === 'pantalla' ? req : null]"
-                      @update:model-value="onEditEspecificacion(clave, $event)"
-                    />
-                  </div>
-                </div>
-              </div>
 
-              <!-- Si quieres dejar el campo JSON oculto para debug, puedes dejarlo así: -->
-              <q-input
-                v-model="especificacionesStr"
-                label="Especificaciones (JSON)"
-                dense
-                outlined
-                class="q-mt-xs"
-                style="display:none"
+              <q-input 
+                filled 
+                v-model="precio" 
+                label="Precio *" 
+                type="number" 
+                :dense="dense" 
+                :rules="[req]"
+                prefix="$"
               />
+
+              <q-select
+                filled
+                v-model="unidad"
+                :options="['kg', 'gramo', 'libra', 'litro', 'ml', 'unidad', 'docena', 'caja']"
+                label="Unidad *"
+                :dense="dense"
+                :rules="[req]"
+              />
+
+              <q-input 
+                filled 
+                v-model.number="presentacion" 
+                label="Presentación *" 
+                type="number" 
+                :dense="dense" 
+                :rules="[req]"
+                hint="Cantidad en la presentación (ej: 500 para 500g)"
+              />
+
+              <q-input 
+                filled 
+                v-model="origen" 
+                label="Origen" 
+                :dense="dense"
+                hint="Origen del producto (ej: Colombia, Valle del Cauca)"
+              />
+
+              <q-toggle v-model="esOrganico" label="Producto Orgánico" />
+              <q-toggle v-model="destacado" label="Producto Destacado" />
+              <q-toggle v-model="estado" label="Activo" true-value="1" false-value="0" />
 
               <!-- Imagen mejorada (opcional, no requerida) -->
               <div class="image-field q-mt-md">
@@ -272,29 +298,26 @@ import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { Notify } from 'quasar'
 import { useProductoStore } from '../stores/producto.js'
 import { useCategoriaStore } from '../stores/categoria.js'
-import { useMarcaStore } from '../stores/marca.js'
-import Card from '../componentes/Card.vue'
 
 const filtroNombre = ref('')
 const filtroEstado = ref('')
 const productoStore = useProductoStore()
 const categoriaStore = useCategoriaStore()
-const marcaStore = useMarcaStore()
 
 const fixed = ref(false)
 const b = ref(false)
 const dense = ref(true)
 const id = ref("")
 const nombre = ref("")
+const descripcion = ref("")
 const categoria_id = ref("")
-const marca_id = ref("")
-const referencia = ref("")
 const precio = ref("")
-const capacidad = ref("")
-const cantidad = ref("")
+const unidad = ref("kg")
+const presentacion = ref(1)
+const esOrganico = ref(false)
+const origen = ref("")
 const destacado = ref(false)
 const estado = ref(1)
-const especificacionesStr = ref("")
 const imagenActual = ref("")
 const imagenNueva = ref([]) // Cambia a array
 
@@ -318,32 +341,32 @@ onBeforeUnmount(() => {
 
 onMounted(async () => {
   await categoriaStore.listarCategorias()
-  await marcaStore.listarMarcas()
-  await productoStore.listarProductos()
+  await productoStore.listarProductos('all')
 })
 
 const categoriasOptions = computed(() => categoriaStore.categorias)
-const marcasOptions = computed(() => marcaStore.marcas)
 const productos = computed(() => productoStore.productos)
 
 const productosFiltrados = computed(() => {
   return productos.value.filter(p => {
-    return (
-      (!filtroEstado.value || String(p.estado) === filtroEstado.value) &&
-      (!filtroNombre.value || p.nombre?.toLowerCase().includes(filtroNombre.value.toLowerCase()))
-    )
+    // Filtro por estado: si no hay filtro seleccionado, muestra todos
+    const pasaEstado = filtroEstado.value === '' || String(p.estado) === String(filtroEstado.value)
+    
+    // Filtro por nombre: si no hay búsqueda, muestra todos
+    const pasaNombre = !filtroNombre.value || p.nombre?.toLowerCase().includes(filtroNombre.value.toLowerCase())
+    
+    return pasaEstado && pasaNombre
   })
 })
 
 const columns = [
   { name: 'imagenes', label: 'Imagen', align: 'left', field: 'imagenes' },
   { name: 'nombre', label: 'Nombre', align: 'left', field: 'nombre', sortable: true },
-  { name: 'categoria', label: 'Categoría', align: 'left', field: row => row.categoria_id?.nombre || '', sortable: true },
-  { name: 'marca', label: 'Marca', align: 'left', field: row => row.marca_id?.nombre || '', sortable: true },
-  { name: 'referencia', label: 'Referencia', align: 'left', field: 'referencia' },
+  { name: 'categoria', label: 'Categoría', align: 'left', field: row => row.categoria?.nombre || row.categoria_id?.nombre || '', sortable: true },
   { name: 'precio', label: 'Precio', align: 'left', field: 'precio' },
-  { name: 'capacidad', label: 'Capacidad', align: 'left', field: 'capacidad' },
-  { name: 'cantidad', label: 'Cantidad', align: 'left', field: 'cantidad' },
+  { name: 'unidad', label: 'Unidad', align: 'left', field: 'unidad' },
+  { name: 'presentacion', label: 'Presentación', align: 'left', field: 'presentacion' },
+  { name: 'esOrganico', label: 'Orgánico', align: 'center', field: 'esOrganico' },
   { name: 'destacado', label: 'Destacado', align: 'center', field: 'destacado', sortable: true },
   { name: 'estado', label: 'Estado', align: 'center', field: 'estado', sortable: true },
   { name: 'opciones', label: 'Opciones', align: 'center' }
@@ -378,75 +401,45 @@ function cerrar() {
   b.value = false
   id.value = ""
   nombre.value = ""
+  descripcion.value = ""
   categoria_id.value = ""
-  marca_id.value = ""
-  referencia.value = ""
   precio.value = ""
-  capacidad.value = ""
-  cantidad.value = ""
+  unidad.value = "kg"
+  presentacion.value = 1
+  esOrganico.value = false
+  origen.value = ""
   destacado.value = false
   estado.value = 1
-  especificacionesStr.value = ""
   imagenActual.value = []
   imagenNueva.value = []
   fixed.value = false
-  // Limpia el objeto especificaciones para que no se compartan campos entre productos
-  especificaciones.value = {}
-  nuevaClave.value = ''
-  nuevoValor.value = ''
 }
 
-// Modelo base de especificaciones
-const especificacionesModelo = {
-  ram: 'RAM',
-  pantalla: 'Pantalla',
-  procesador: 'Procesador',
-  bateria: 'Batería',
-  camara: 'Cámara',
-  sistema: 'Sistema'
-}
 
-// Al crear, inicializa todos los campos del modelo
+// Al crear, inicializa todos los campos
 function abrirDialogCrear() {
   cerrar()
-  especificaciones.value = Object.fromEntries(
-    Object.keys(especificacionesModelo).map(k => [k, ''])
-  )
-  especificacionesStr.value = JSON.stringify(especificaciones.value, null, 2)
   fixed.value = true
 }
 
-// Al editar, asegúrate de que todos los campos del modelo estén presentes
+// Al editar, carga los datos del producto
 function traerDatos(row) {
   id.value = row._id
-  nombre.value = row.nombre
-  categoria_id.value = row.categoria_id?._id || row.categoria_id || ""
-  marca_id.value = row.marca_id?._id || row.marca_id || ""
-  referencia.value = row.referencia || ""
-  precio.value = row.precio
-  capacidad.value = row.capacidad || ""
-  cantidad.value = row.cantidad
+  nombre.value = row.nombre || ""
+  descripcion.value = row.descripcion || ""
+  categoria_id.value = row.categoria?._id || row.categoria_id?._id || row.categoria_id || ""
+  precio.value = row.precio || ""
+  unidad.value = row.unidad || "kg"
+  presentacion.value = row.presentacion || 1
+  esOrganico.value = !!row.esOrganico
+  origen.value = row.origen || ""
   destacado.value = !!row.destacado
   estado.value = row.estado
-  especificacionesStr.value = row.especificaciones ? JSON.stringify(row.especificaciones, null, 2) : ""
   imagenActual.value = Array.isArray(row.imagenes) ? row.imagenes : (row.imagenes ? [row.imagenes] : [])
   principalIdx.value = row.imagenPrincipalIdx ?? 0
   imagenNueva.value = []
   fixed.value = true
   b.value = true
-  // Mezcla el modelo con los datos existentes
-  try {
-    const base = Object.fromEntries(
-      Object.keys(especificacionesModelo).map(k => [k, ''])
-    )
-    especificaciones.value = row.especificaciones
-      ? { ...base, ...row.especificaciones }
-      : { ...base }
-  } catch {
-    especificaciones.value = Object.fromEntries(
-      Object.keys(especificacionesModelo).map(k => [k, ''])
-    )
-  }
 }
 
 const formProducto = ref(null)
@@ -455,43 +448,34 @@ const saving = ref(false)
 const req = v => !!String(v ?? '').trim() || 'Requerido'
 
 async function guardarProducto() {
-  if (!nombre.value || !precio.value || !cantidad.value || !categoria_id.value || !marca_id.value) {
+  if (!nombre.value || !precio.value || !unidad.value || !presentacion.value || !categoria_id.value) {
     Notify.create({ type: 'warning', message: 'Completa los campos obligatorios' })
-    return
-  }
-
-  // CORRECCIÓN: Usa el objeto especificaciones.value directamente
-  let especificacionesObj = {}
-  try {
-    // Si especificacionesStr tiene valor, úsalo, si no, usa especificaciones.value
-    if (especificacionesStr.value) {
-      especificacionesObj = JSON.parse(especificacionesStr.value)
-    } else {
-      especificacionesObj = { ...especificaciones.value }
-    }
-  } catch (e) {
-    Notify.create({ type: 'negative', message: 'Especificaciones debe ser JSON válido' })
     return
   }
 
   const payload = new FormData()
   payload.append('nombre', nombre.value.trim())
-  payload.append('categoria_id', categoria_id.value)
-  payload.append('marca_id', marca_id.value)
-  payload.append('referencia', referencia.value)
+  if (descripcion.value) {
+    payload.append('descripcion', descripcion.value.trim())
+  }
   payload.append('precio', precio.value)
-  payload.append('capacidad', capacidad.value)
-  payload.append('cantidad', cantidad.value)
-  payload.append('destacado', destacado.value ? 'true' : 'false')
-  payload.append('estado', estado.value)
-  payload.append('especificaciones', JSON.stringify(especificacionesObj))
-  if (imagenNueva.value instanceof File) payload.append('imagenes', imagenNueva.value)
+  payload.append('unidad', unidad.value)
+  payload.append('presentacion', presentacion.value)
+  payload.append('categoria', categoria_id.value)
+  payload.append('esOrganico', esOrganico.value)
+  if (origen.value) {
+    payload.append('origen', origen.value.trim())
+  }
+  payload.append('destacado', destacado.value)
+  
+  // Agregar imágenes
   if (Array.isArray(imagenNueva.value)) {
     imagenNueva.value.forEach(file => {
-      payload.append('imagenes', file)
+      if (file instanceof File) {
+        payload.append('imagenes', file)
+      }
     })
   }
-  payload.append('imagenPrincipalIdx', principalIdx.value)
 
   try {
     saving.value = true
@@ -500,13 +484,13 @@ async function guardarProducto() {
       : productoStore.crearProducto(payload)
 
     await apiPromise
-    await productoStore.listarProductos()
+    await productoStore.listarProductos('all')
     fixed.value = false
     Notify.create({ type: 'positive', message: b.value ? 'Producto actualizado' : 'Producto creado' })
   } catch (error) {
     Notify.create({
       type: 'negative',
-      message: error.response?.data?.msg || error.response?.data?.errors?.[0]?.msg || 'Error'
+      message: error.response?.data?.msg || error.response?.data?.error || 'Error al guardar producto'
     })
   } finally {
     saving.value = false
@@ -538,10 +522,16 @@ async function activarProducto(id) {
   if (rowLoading.value[key]) return
   setRowLoading(key, true)
   try {
-    await productoStore.activarProducto(id)
-    await productoStore.listarProductos()
+    const resultado = await productoStore.activarProducto(id)
+    if (resultado) {
+      // Actualizar estado localmente sin recargar desde backend
+      const producto = productoStore.productos.find(p => p._id === id)
+      if (producto) {
+        producto.estado = 1
+      }
+    }
   } catch (e) {
-    Notify.create({ type: 'negative', message: 'Error al activar producto' })
+    console.error('Error al activar producto:', e)
   } finally {
     setRowLoading(key, false)
   }
@@ -552,10 +542,16 @@ async function desactivarProducto(id) {
   if (rowLoading.value[key]) return
   setRowLoading(key, true)
   try {
-    await productoStore.desactivarProducto(id)
-    await productoStore.listarProductos()
+    const resultado = await productoStore.desactivarProducto(id)
+    if (resultado) {
+      // Actualizar estado localmente sin recargar desde backend
+      const producto = productoStore.productos.find(p => p._id === id)
+      if (producto) {
+        producto.estado = 0
+      }
+    }
   } catch (e) {
-    Notify.create({ type: 'negative', message: 'Error al desactivar producto' })
+    console.error('Error al desactivar producto:', e)
   } finally {
     setRowLoading(key, false)
   }
@@ -572,47 +568,7 @@ const imagenNuevaFiles = computed(() =>
     : []
 )
 
-const especificaciones = ref({});
-const nuevaClave = ref('');
-const nuevoValor = ref('');
 
-// Sincroniza especificacionesStr <-> especificaciones (objeto)
-watch(especificacionesStr, (val) => {
-  try {
-    especificaciones.value = val ? JSON.parse(val) : {};
-  } catch {
-    especificaciones.value = {};
-  }
-}, { immediate: true });
-
-watch(especificaciones, (val) => {
-  especificacionesStr.value = JSON.stringify(val, null, 2);
-});
-
-
-
-
-function agregarEspecificacion() {
-  if (nuevaClave.value && nuevoValor.value) {
-    especificaciones.value = {
-      ...especificaciones.value,
-      [nuevaClave.value]: nuevoValor.value
-    };
-    nuevaClave.value = '';
-    nuevoValor.value = '';
-  }
-}
-function eliminarEspecificacion(clave) {
-  const obj = { ...especificaciones.value };
-  delete obj[clave];
-  especificaciones.value = obj;
-}
-function onEditEspecificacion(clave, valor) {
-  especificaciones.value = {
-    ...especificaciones.value,
-    [clave]: valor
-  };
-}
 
 </script>
 

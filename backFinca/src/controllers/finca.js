@@ -55,7 +55,6 @@ const httpFincas = {
         vision,
         objetivos,
         alcance,
-        historia,
         telefono,
         email,
         direccion,
@@ -112,8 +111,6 @@ const httpFincas = {
         descripcion: descripcion?.trim(),
         mision: mision?.trim(),
         vision: vision?.trim(),
-        objetivos: Array.isArray(objetivos) ? objetivos.filter(obj => obj.trim()) : [],
-        alcance: alcance?.trim(),
         telefono: telefono?.trim(),
         email: email?.trim(),
         direccion: direccion?.trim(),
@@ -155,7 +152,6 @@ const httpFincas = {
         descripcion,
         mision,
         vision,
-        objetivos,
         alcance,
         telefono,
         email,
@@ -237,9 +233,6 @@ const httpFincas = {
       };
 
       // Manejar arrays
-      if (objetivos !== undefined) {
-        updateData.objetivos = Array.isArray(objetivos) ? objetivos.filter(obj => obj.trim()) : [];
-      }
       if (tipoProductos !== undefined) {
         updateData.tipoProductos = Array.isArray(tipoProductos) ? tipoProductos.filter(tipo => tipo.trim()) : [];
       }
@@ -270,91 +263,7 @@ const httpFincas = {
     }
   },
 
-  // PUT - Agregar objetivo
-  putAgregarObjetivo: async (req, res) => {
-    try {
-      const { objetivo } = req.body;
 
-      if (!objetivo || !objetivo.trim()) {
-        return res.status(400).json({
-          ok: false,
-          msg: 'El objetivo es requerido'
-        });
-      }
-
-      const finca = await Finca.findOne({ estado: 1 });
-      if (!finca) {
-        return res.status(404).json({
-          ok: false,
-          msg: 'No se encontró información de la finca'
-        });
-      }
-
-      finca.objetivos.push(objetivo.trim());
-      await finca.save();
-
-      res.json({
-        ok: true,
-        msg: 'Objetivo agregado exitosamente',
-        finca
-      });
-
-    } catch (error) {
-      console.error('Error al agregar objetivo:', error);
-      res.status(500).json({
-        ok: false,
-        msg: 'Error al agregar objetivo',
-        error: error.message
-      });
-    }
-  },
-
-  // DELETE - Eliminar objetivo
-  deleteObjetivo: async (req, res) => {
-    try {
-      const { index } = req.params;
-      const objetivoIndex = parseInt(index);
-
-      if (isNaN(objetivoIndex) || objetivoIndex < 0) {
-        return res.status(400).json({
-          ok: false,
-          msg: 'Índice de objetivo inválido'
-        });
-      }
-
-      const finca = await Finca.findOne({ estado: 1 });
-      if (!finca) {
-        return res.status(404).json({
-          ok: false,
-          msg: 'No se encontró información de la finca'
-        });
-      }
-
-      if (objetivoIndex >= finca.objetivos.length) {
-        return res.status(400).json({
-          ok: false,
-          msg: 'Índice de objetivo fuera de rango'
-        });
-      }
-
-      finca.objetivos.splice(objetivoIndex, 1);
-      await finca.save();
-
-      res.json({
-        ok: true,
-        msg: 'Objetivo eliminado exitosamente',
-        finca
-      });
-
-    } catch (error) {
-      console.error('Error al eliminar objetivo:', error);
-      res.status(500).json({
-        ok: false,
-        msg: 'Error al eliminar objetivo',
-        error: error.message
-      });
-    }
-  },
 
   // DELETE - Eliminar imagen de finca
   deleteImagenFinca: async (req, res) => {
@@ -423,6 +332,113 @@ const httpFincas = {
 
     } catch (error) {
       console.error('Error al obtener información pública:', error);
+      res.status(500).json({
+        ok: false,
+        msg: 'Error interno del servidor',
+        error: error.message
+      });
+    }
+  },
+
+  // GET - Solo información básica (nombre, ubicación, descripción)
+  getFincaBasica: async (req, res) => {
+    try {
+      const finca = await Finca.findOne({ estado: 1 })
+        .select('nombre ubicacion descripcion logo');
+      
+      if (!finca) {
+        return res.status(404).json({
+          ok: false,
+          msg: 'No se encontró información básica de la finca'
+        });
+      }
+
+      res.json({
+        ok: true,
+        finca
+      });
+    } catch (error) {
+      res.status(500).json({
+        ok: false,
+        msg: 'Error interno del servidor',
+        error: error.message
+      });
+    }
+  },
+
+  // GET - Solo información de contacto
+  getFincaContacto: async (req, res) => {
+    try {
+      const finca = await Finca.findOne({ estado: 1 })
+        .select('telefono email direccion instagram facebook whatsapp horarioAtencion');
+      
+      if (!finca) {
+        return res.status(404).json({
+          ok: false,
+          msg: 'No se encontró información de contacto'
+        });
+      }
+
+      res.json({
+        ok: true,
+        contacto: finca
+      });
+    } catch (error) {
+      res.status(500).json({
+        ok: false,
+        msg: 'Error interno del servidor',
+        error: error.message
+      });
+    }
+  },
+
+  // GET - Solo información institucional
+  getFincaInstitucional: async (req, res) => {
+    try {
+      const finca = await Finca.findOne({ estado: 1 })
+        .select('mision vision objetivos alcance historia certificaciones');
+      
+      if (!finca) {
+        return res.status(404).json({
+          ok: false,
+          msg: 'No se encontró información institucional'
+        });
+      }
+
+      res.json({
+        ok: true,
+        institucional: finca
+      });
+    } catch (error) {
+      res.status(500).json({
+        ok: false,
+        msg: 'Error interno del servidor',
+        error: error.message
+      });
+    }
+  },
+
+  // GET - Solo galería de imágenes
+  getFincaGaleria: async (req, res) => {
+    try {
+      const finca = await Finca.findOne({ estado: 1 })
+        .select('logo imagenesFinca');
+      
+      if (!finca) {
+        return res.status(404).json({
+          ok: false,
+          msg: 'No se encontró galería de la finca'
+        });
+      }
+
+      res.json({
+        ok: true,
+        galeria: {
+          logo: finca.logo,
+          imagenes: finca.imagenesFinca || []
+        }
+      });
+    } catch (error) {
       res.status(500).json({
         ok: false,
         msg: 'Error interno del servidor',

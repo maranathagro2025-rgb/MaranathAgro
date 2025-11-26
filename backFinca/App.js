@@ -17,7 +17,7 @@ const usuarios = require('./src/routes/usuario.js');
 const productos = require("./src/routes/producto.js");
 const fincas = require("./src/routes/finca.js");
 const categorias = require("./src/routes/categoria.js");
-
+const publicaciones = require("./src/routes/publicacion.js")
 
 
 // Middleware de rutas
@@ -26,8 +26,10 @@ app.use('/api/usuario', usuarios);
 app.use('/api/producto', productos);
 app.use('/api/finca', fincas);
 app.use('/api/categoria', categorias);
-
+app.use('/api/publicacion', publicaciones);
 const PORT = process.env.PORT || 1598;
+
+
 
 
 app.listen(PORT, () => {

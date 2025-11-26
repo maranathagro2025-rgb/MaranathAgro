@@ -9,9 +9,17 @@ const ProductoSchema = new mongoose.Schema({
     type: String, 
     required: true,
     enum: ['kg', 'gramo', 'libra', 'litro', 'ml', 'unidad', 'docena', 'caja'],
-    default: "unidad" 
+    default: "unidad" ,
+        set: function(valor) {
+      // Convertir a minúsculas antes de guardar
+      return valor ? valor.toLowerCase().trim() : valor;
+    }
   },
-  
+  presentacion: { 
+    type: Number, 
+    required: true,
+    min: 0.01 
+  },
   // Relaciones
   categoria: { 
     type: mongoose.Schema.Types.ObjectId, 
@@ -28,7 +36,6 @@ const ProductoSchema = new mongoose.Schema({
   imagenPrincipal: { type: String }, // URL de la imagen principal
   // Configuración
   destacado: { type: Boolean, default: false }, // Para productos destacados
-  descuento: { type: Number, default: 0, min: 0, max: 100 }, // Porcentaje de descuento
   estado: { type: Number, default: 1 }, // 1 = Activo, 0 = Inactivo
   
 }, { timestamps: true });

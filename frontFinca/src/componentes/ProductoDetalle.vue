@@ -44,58 +44,56 @@
             <div class="text-h6 text-green-8 q-mb-md">
               ${{ producto.precio?.toLocaleString() }}
             </div>
+            
+            <!-- Descripción -->
+            <div v-if="producto.descripcion" class="text-body2 text-grey-8 q-mb-md">
+              {{ producto.descripcion }}
+            </div>
+            
             <q-separator spaced />
             <div class="q-mb-md">
               <q-list dense>
+                <!-- Categoría -->
                 <q-item>
                   <q-item-section avatar>
-                    <q-icon name="business" color="grey-7" />
+                    <q-icon name="category" color="grey-7" />
                   </q-item-section>
                   <q-item-section>
-                    <span class="text-bold">Marca:</span>
-                    {{ producto.marca_id?.nombre || "N/A" }}
+                    <span class="text-bold">Categoría:</span>
+                    {{ getCategoriaName(producto.categoria) }}
                   </q-item-section>
                 </q-item>
-                <q-item>
-                  <q-item-section avatar>
-                    <q-icon name="confirmation_number" color="grey-7" />
-                  </q-item-section>
-                  <q-item-section>
-                    <span class="text-bold">Referencia:</span>
-                    {{ producto.referencia || "N/A" }}
-                  </q-item-section>
-                </q-item>
-                <q-item>
-                  <q-item-section avatar>
-                    <q-icon name="storage" color="grey-7" />
-                  </q-item-section>
-                  <q-item-section>
-                    <span class="text-bold">Capacidad:</span>
-                    {{ producto.capacidad || "N/A" }}
-                  </q-item-section>
-                </q-item>
+                
+                <!-- Presentación -->
                 <q-item>
                   <q-item-section avatar>
                     <q-icon name="inventory_2" color="grey-7" />
                   </q-item-section>
                   <q-item-section>
-                    <span class="text-bold">Cantidad:</span>
-                    {{ producto.cantidad }}
+                    <span class="text-bold">Presentación:</span>
+                    {{ producto.presentacion }} {{ producto.unidad || '' }}
                   </q-item-section>
                 </q-item>
+                
+                <!-- Origen -->
                 <q-item>
                   <q-item-section avatar>
-                    <q-icon name="verified_user" color="grey-7" />
+                    <q-icon name="public" color="grey-7" />
                   </q-item-section>
                   <q-item-section>
-                    <span class="text-bold">Estado:</span>
-                    <q-chip
-                      :color="producto.estado === 1 ? 'green' : 'red'"
-                      text-color="white"
-                      square
-                      size="sm"
-                    >
-                      {{ producto.estado === 1 ? "Activo" : "Inactivo" }}
+                    <span class="text-bold">Origen:</span>
+                    {{ producto.origen || 'N/A' }}
+                  </q-item-section>
+                </q-item>
+                
+                <!-- Producto Orgánico -->
+                <q-item v-if="producto.esOrganico">
+                  <q-item-section avatar>
+                    <q-icon name="eco" color="green" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-chip color="green" text-color="white" icon="eco" size="sm">
+                      Producto Orgánico
                     </q-chip>
                   </q-item-section>
                 </q-item>
@@ -134,7 +132,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
   producto: { type: Object, required: true },
@@ -149,6 +147,18 @@ watch(
 watch(visible, (val) => emit("update:modelValue", val));
 
 const slide = ref(0);
+
+// Helper para obtener nombre de categoría
+const getCategoriaName = (categoria) => {
+  if (!categoria) return 'N/A';
+  if (typeof categoria === 'object' && categoria !== null) {
+    return categoria.nombre || 'N/A';
+  }
+  if (typeof categoria === 'string') {
+    return categoria;
+  }
+  return 'N/A';
+};
 </script>
 
 <style scoped>

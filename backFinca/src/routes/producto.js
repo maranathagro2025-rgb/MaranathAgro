@@ -37,6 +37,9 @@ router.post(
     check("precio", "El precio es obligatorio").not().isEmpty(),
     check("precio", "Precio inválido").isNumeric(),
     check("unidad", "La unidad es obligatoria").not().isEmpty(),
+   check("presentacion", "La presentación es obligatoria").not().isEmpty(),
+    check("presentacion", "La presentación debe ser un número").isNumeric(),
+    check("presentacion", "La presentación debe ser mayor a 0").isFloat({ min: 0.01 }),
     check("destacado", "El campo destacado es obligatorio").optional().isBoolean(),
     check("nombre").custom(productoHelper.existeProductoPorNombre),
     validarCampos,
@@ -56,22 +59,26 @@ router.put(
     check("precio", "Precio inválido").optional().isNumeric(),
     check("categoria", "La categoría es obligatoria").optional().not().isEmpty().isMongoId(),
     check("unidad", "La unidad es obligatoria").optional().not().isEmpty(),
+    check("presentacion", "La presentación debe ser un número").optional().isNumeric(),
+    check("presentacion", "La presentación debe ser mayor a 0").optional().isFloat({ min: 0.01 }),
     validarCampos,
   ],
   httpProductos.putEditarProducto
 );
 
-// ajustar inventario
-router.put(
-  "/ajustarInventario/:id",
-  [
+
+
+// DELETE - Eliminar imagen de producto por índice
+
+router.delete('/imagen/:id/:index', [
     validarJWT,
-    check("id", "No es un ID válido").isMongoId(),
-    check("cantidad", "Cantidad es obligatoria y debe ser entero mayor a 0").isInt({ min: 1 }),
-    validarCampos,
-  ],
-  httpProductos.putAjustarInventario
-);
+    check('id', 'ID de producto inválido').isMongoId(),
+    check('id').custom(productoHelper.existeProductoPorId),
+    check('index', 'Índice inválido').isInt({ min: 0 }),
+    validarCampos
+], httpProductos.deleteImagenProducto);
+
+//activar producto
 
 router.put("/activar/:id",[
     validarJWT,

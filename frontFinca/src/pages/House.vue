@@ -1,304 +1,210 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <!-- Modal de Login para Administrador -->
-  <q-dialog v-model="mostrarLogin" @hide="mostrarLogin = false">
-  <Login @close="mostrarLogin = false" />
-</q-dialog>
-
-    <!-- Modal de Carrito -->
-    <q-dialog v-model="mostrarCarrito" @hide="mostrarCarrito = false">
-      <carrito @close="mostrarCarrito = false" />
+    <q-dialog v-model="mostrarLogin" @hide="mostrarLogin = false">
+      <Login @close="mostrarLogin = false" />
     </q-dialog>
 
     <q-page-container>
-      <div class="q-pa-md">
-        <!-- Encabezado -->
-        <q-toolbar dense class="bg-green text-white q-mb-md header-toolbar">
-          <q-toolbar-title class="row items-center no-wrap">
-            <span class="text-weight-medium">CASA CELULAR M&A</span>
-            <q-badge color="green" rounded class="q-ml-sm">{{ productosFiltrados.length }}</q-badge>
-          </q-toolbar-title>
-          <q-space />
-          <q-btn size="sm" flat round icon="login" @click="mostrarLogin = true" :aria-label="'Abrir login'" />
-          <div style="position: relative; display: inline-block;">
-            <q-btn size="sm" flat round icon="shopping_cart" @click="mostrarCarrito = true" :aria-label="'Ir al carrito'" />
-            <span
-              v-if="cantidadCarrito > 0"
-              class="carrito-badge"
-            >{{ cantidadCarrito }}</span>
-          </div>
-          <!-- <q-btn size="sm" flat round icon="search" @click="toggleBuscador" :aria-label="'Mostrar/ocultar buscador'" /> -->
-        </q-toolbar>
+      <!-- Loading general mientras carga la información de la finca -->
+      <div v-if="fincaStore.loading && !fincaStore.fincaPublica" class="flex flex-center" style="min-height: 80vh;">
+        <div class="text-center">
+          <q-spinner-dots color="green-8" size="60px" />
+          <div class="text-h6 text-green-8 q-mt-md">Cargando información de la finca...</div>
+        </div>
+      </div>
 
-        <!-- Hero Banner -->
-        <section class="hero-banner q-pa-md q-mb-lg">
-                    
-          <div class="hero-content">
-                  <div class="q-pa-md q-gutter-sm">
-            <q-bar dense class="bg-teal text-white">
-              <!-- <q-icon :name="fasSignal" /> -->
-              <div>moviles</div>
-              <div>4G-5G</div>
-              <!-- <q-icon :name="fasWifi" /> -->
-              <q-space />
-              <q-icon name="near_me" />
-              <div>100%</div>
-              <!-- <q-icon :name="fasBatteryFull" /> -->
-            </q-bar>
-            </div>
-            <div class="text-h4 text-weight-bold line-tight q-mb-sm">
-              ¡Las mejores ofertas en celulares y accesorios tecnológicos!
-            </div>
-            <div class="text-body1 text-white text-weight-regular q-mb-md hero-sub">
-              Compra celulares, tablets y accesorios con entrega inmediata y promociones exclusivas.
-            </div>
-            
-            <!-- carrusel -->
-               <div class="q-pa-md">
-            <q-carousel
-              animated
-              v-model="slide"
-              navigation
-              infinite
-              :autoplay="autoplay"
-              arrows
-              transition-prev="slide-right"
-              transition-next="slide-left"
-              @mouseenter="autoplay = false"
-              @mouseleave="autoplay = true"
-            >
-              <q-carousel-slide :name="1" img-src="../assets/celss.jpg" />
-              <q-carousel-slide :name="2" img-src="../assets/phone.jpg" />
-              <q-carousel-slide :name="3" img-src="../assets/social3.jpg" />
-              <q-carousel-slide :name="4" img-src="../assets/phone33.jpg" />
-            </q-carousel>
-          </div>
-          
-            <div class="text-body1 text-white text-weight-regular q-mb-md hero-sub">
-              Busca por nombre, categoría o marca y descubre opciones confiables.
-            </div>
+      <div v-else class="q-pa-md">
+        <!-- ✅ Componente Banner (Encabezado + Hero) -->
+        <Banner @open-login="mostrarLogin = true" />
 
-            <div class="row q-col-gutter-sm items-center hero-cta">
-              <div class="col-12 col-md">
-                <q-input v-model="busqueda" outlined dense color="white" label="¿Qué estás buscando?" class="bg-white text-primary rounded-borders">
-                  <template #prepend>
-                    <q-icon name="search" color="primary" />
-                  </template>
-                </q-input>
+        <!-- Sección Sobre Nosotros -->
+        <section class="about-section q-mb-xl">
+          <div class="row q-col-gutter-lg items-center">
+            <div class="col-12 col-md-6">
+              <div class="text-overline text-green-8 text-weight-bold q-mb-sm">Sobre Nosotros</div>
+              <div class="text-h4 text-weight-bold text-grey-9 q-mb-md">
+                {{ infoFinca?.nombre || 'Finca Maranatha' }}
               </div>
-              <div class="col-12 col-md-auto">
-                <q-btn color="secondary" unelevated icon="travel_explore" label="Explorar productos" @click="scrollToResultados" />
+              
+              <!-- Ubicación -->
+              <div v-if="infoFinca?.ubicacion" class="text-body2 text-grey-6 q-mb-md">
+                <q-icon name="place" size="18px" class="q-mr-xs" />
+                {{ infoFinca.ubicacion }}
+              </div>
+
+              <!-- Descripción -->
+              <div class="text-body1 text-grey-7 q-mb-md line-height-loose">
+                {{ infoFinca?.descripcion || 'La Finca Maranatha es un proyecto agropecuario dedicado a la producción sostenible y de alta calidad. Con años de experiencia, nos especializamos en ofrecer productos frescos que reflejan nuestro compromiso con la tierra y el medio ambiente.' }}
+              </div>
+
+              <!-- Misión -->
+              <div v-if="infoFinca?.mision" class="text-body1 text-grey-7 q-mb-md line-height-loose">
+                <strong class="text-green-8">Misión:</strong> {{ infoFinca.mision }}
+              </div>
+
+              <!-- Visión -->
+              <div v-if="infoFinca?.vision" class="text-body1 text-grey-7 q-mb-md line-height-loose">
+                <strong class="text-green-8">Visión:</strong> {{ infoFinca.vision }}
+              </div>
+
+              <!-- Certificaciones -->
+              <div v-if="institucionalFinca?.certificaciones && institucionalFinca.certificaciones.length > 0" class="q-mb-md">
+                <div class="text-subtitle2 text-green-8 q-mb-xs">Certificaciones:</div>
+                <div class="row q-gutter-xs">
+                  <q-chip 
+                    v-for="(cert, i) in institucionalFinca.certificaciones" 
+                    :key="i"
+                    icon="verified"
+                    color="green-1" 
+                    text-color="green-8"
+                    size="sm"
+                  >
+                    {{ cert }}
+                  </q-chip>
+                </div>
+              </div>
+
+              <!-- Chips de valores -->
+              <div class="row q-gutter-sm">
+                <q-chip icon="verified" color="green-1" text-color="green-8" class="q-px-md">
+                  Calidad Garantizada
+                </q-chip>
+                <q-chip icon="eco" color="green-1" text-color="green-8" class="q-px-md">
+                  Producción Sostenible
+                </q-chip>
+                <q-chip icon="groups" color="green-1" text-color="green-8" class="q-px-md">
+                  Tradición Familiar
+                </q-chip>
               </div>
             </div>
-
-            <div class="row q-gutter-xs q-mt-sm no-wrap scroll-x chip-row">
-              <!-- Categoría chip -->
-              <q-chip
-                v-for="cat in categoriasOptions.slice(0, 6)"
-                :key="cat._id"
-                dense
-                color="white"
-                text-color="primary"
-                clickable
-                @click="categoriaSeleccionada = cat"
+            <div class="col-12 col-md-6">
+              <!-- Carousel de imágenes -->
+              <q-carousel
+                v-if="galeriaFinca && galeriaFinca.length > 0"
+                animated
+                v-model="slideGaleria"
+                navigation
+                infinite
+                :autoplay="autoplayGaleria"
+                arrows
+                transition-prev="slide-right"
+                transition-next="slide-left"
+                @mouseenter="autoplayGaleria = false"
+                @mouseleave="autoplayGaleria = true"
+                class="about-carousel rounded-borders shadow-4"
+                height="350px"
               >
-                {{ cat.nombre }}
-              </q-chip>
+                <q-carousel-slide
+                  v-for="(img, index) in galeriaFinca"
+                  :key="index"
+                  :name="index + 1"
+                  :img-src="img"
+                  class="carousel-slide"
+                />
+              </q-carousel>
+              <div v-else class="about-placeholder rounded-borders">
+                <q-icon name="landscape" size="120px" color="green-3" />
+                <div class="text-grey-6 q-mt-md">
+                  Galería de imágenes no disponible
+                </div>
+              </div>
 
-              <!-- Marca chip -->
-              <q-chip
-                v-for="marca in marcasOptions.slice(0, 6)"
-                :key="marca._id"
-                dense
-                color="white"
-                text-color="primary"
-                clickable
-                @click="marcaSeleccionada = marca"
-              >
-                {{ marca.nombre }}
-              </q-chip>
+              <!-- Horario de atención -->
+              <div v-if="contactoFinca?.horarioAtencion" class="q-mt-md q-pa-md bg-green-1 rounded-borders">
+                <div class="row items-center">
+                  <q-icon name="schedule" color="green-8" size="24px" class="q-mr-sm" />
+                  <div>
+                    <div class="text-caption text-green-8 text-weight-bold">Horario de Atención</div>
+                    <div class="text-body2 text-grey-8">{{ contactoFinca.horarioAtencion }}</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <!-- Filtros principales: Buscador + Categoría + Marca -->
-        <div class="row q-col-gutter-md q-mb-md" v-show="mostrarBuscador">
-          <div class="col-12 col-md-4">
-            <q-input
-              v-model="busqueda"
-              outlined
-              debounce="300"
-              label="Buscar productos..."
-              clearable
-              dense
-              color="primary"
-              class="input-styled"
-              :aria-label="'Buscar por texto'"
-            >
-              <template #prepend>
-                <q-icon name="search" />
-              </template>
-            </q-input>
+        <!-- Sección Tipos de Productos -->
+        <section 
+          v-if="institucionalFinca?.tipoProductos && institucionalFinca.tipoProductos.length > 0" 
+          class="productos-section q-mb-xl q-pa-md q-pa-sm-lg bg-green-1 rounded-borders"
+        >
+          <div class="text-center q-mb-sm q-mb-md-md">
+            <div class="productos-title text-weight-bold text-green-8">¿Qué producimos?</div>
           </div>
-          <div class="col-12 col-md-4">
-            <q-select
-              v-model="categoriaSeleccionada"
-              :options="categoriasOptions"
-              label="Filtrar por categoría"
-              dense
-              outlined
-              color="primary"
-              clearable
-              option-label="nombre"
-              :option-value="cat => cat"
-              use-input
-              input-debounce="0"
-              :aria-label="'Seleccionar categoría'"
+          <div class="row q-gutter-xs q-gutter-sm-sm q-gutter-md-md justify-center">
+            <q-chip
+              v-for="(tipo, i) in institucionalFinca.tipoProductos"
+              :key="i"
+              icon="agriculture"
+              color="green-7"
+              text-color="white"
+              class="producto-chip"
             >
-              <template #prepend>
-                <q-icon name="category" />
-              </template>
-            </q-select>
+              {{ tipo }}
+            </q-chip>
           </div>
-          <div class="col-12 col-md-4">
-            <q-select
-              v-model="marcaSeleccionada"
-              :options="marcasOptions"
-              label="Filtrar por marca"
-              dense
-              outlined
-              color="primary"
-              clearable
-              option-label="nombre"
-              :option-value="marca => marca"
-              use-input
-              input-debounce="0"
-              :aria-label="'Seleccionar marca'"
-            >
-              <template #prepend>
-                <q-icon name="sell" />
-              </template>
-            </q-select>
-          </div>
-        </div>
+                  <!-- ✅ Componente de Publicaciones Recientes -->
+        <Publicacion :limite="6" />
 
-        <!-- Filtros secundarios: Orden + Limpiar -->
-        <div class="row q-col-gutter-md q-mb-lg items-center">
-          <div class="col-12 col-md-8"></div>
-          <div class="col-12 col-md-4">
-            <div class="row items-center q-gutter-sm justify-end">
-              <q-select
-                v-model="ordenSeleccionado"
-                :options="opcionesOrden"
-                dense
-                outlined
-                label="Ordenar"
-                color="primary"
-                class="col"
-                :aria-label="'Ordenar resultados'"
-              />
-              <q-btn flat color="negative" icon="restart_alt" label="Limpiar" @click="limpiarFiltros" />
+        </section>
+
+        <!-- Sección Categorías Destacadas -->
+        <section class="categories-section q-mb-xl" v-if="categoriasActivas.length > 0">
+          <div class="text-center q-mb-lg">
+            <div class="text-overline text-green-8 text-weight-bold">Nuestras Categorías</div>
+            <div class="text-h4 text-weight-bold text-grey-9">Explora Nuestros Productos</div>
+            <div class="text-body1 text-grey-6 q-mt-sm">
+              Descubre todas las categorías de productos que tenemos para ti
             </div>
           </div>
-        </div>
-
-        <!-- Resultados -->
-        <div v-if="cargando" class="row q-col-gutter-md">
-          <div v-for="n in 8" :key="n" class="col-12 col-sm-6 col-md-3 col-lg-3 col-xl-3">
-            <q-card class="fit">
-              <q-skeleton height="160px" square />
-              <q-card-section>
-                <q-skeleton type="text" class="q-mb-sm" />
-                <q-skeleton type="text" width="60%" />
-              </q-card-section>
-            </q-card>
-          </div>
-        </div>
-
-        <div v-else ref="resultadosRef">
-          <div v-if="productosOrdenados.length === 0" class="q-pa-xl text-center text-grey-7">
-            <q-icon name="travel_explore" size="64px" class="q-mb-md text-grey-5" />
-            <div class="text-h6 q-mb-xs">Sin resultados</div>
-            <div class="text-body2 q-mb-md">No hay productos disponibles.</div>
-            <q-btn color="primary" outline icon="filter_alt_off" label="Limpiar filtros" @click="limpiarFiltros" />
-          </div>
-          <div v-else class="row q-col-gutter-md items-stretch">
-            <div
-              v-for="producto in productosOrdenados"
-              :key="producto._id"
-              class="col-12 col-sm-6 col-md-3 col-lg-3 col-xl-3"
+          <div class="row q-col-gutter-md">
+            <div 
+              v-for="cat in categoriasActivas.slice(0, 6)" 
+              :key="cat._id"
+              class="col-12 col-sm-6 col-md-4"
             >
-              <CardLugar
-                :lugar="producto"
-                @add-carrito="agregarAlCarrito"
-              />
+              <q-card 
+                flat 
+                class="category-card cursor-pointer" 
+                @click="verProductosPorCategoria"
+              >
+                <q-card-section class="text-center q-pa-lg">
+                  <q-icon name="category" size="64px" color="green-7" class="q-mb-md" />
+                  <div class="text-h6 text-weight-bold text-grey-9 q-mb-xs">{{ cat.nombre }}</div>
+                  <div class="text-body2 text-grey-6">{{ cat.descripcion }}</div>
+                  <q-btn 
+                    flat 
+                    color="green-8" 
+                    label="Ver productos" 
+                    icon-right="arrow_forward"
+                    class="q-mt-md"
+                  />
+                </q-card-section>
+              </q-card>
             </div>
           </div>
-        </div>
 
-      <!-- Bottom Banner -->
-  <section class="bottom-banner q-pa-md q-mt-xl">
-    <div class="row items-center q-col-gutter-lg">
-      <div class="col-12 col-md-7">
-        <div class="text-subtitle2 text-white text-uppercase letter-spaced q-mb-xs">
-          ¿Quieres comprar directamente?
-        </div>
-        <div class="text-h5 text-weight-bold text-white line-tight q-mb-sm">
-          Compra fácil y seguro en nuestro almacén
-        </div>
-        <div class="text-body1 text-white hero-sub q-mb-md">
-          Haz tu pedido por WhatsApp y recibe atención personalizada. ¡Te guiamos en todo el proceso!
-        </div>
-        <div class="row q-gutter-sm q-mb-md benefits">
-          <div class="col-auto text-white"><q-icon name="check_circle" size="20px" class="q-mr-xs" /> Compra directa</div>
-          <div class="col-auto text-white"><q-icon name="check_circle" size="20px" class="q-mr-xs" /> Asesoría personalizada</div>
-          <div class="col-auto text-white"><q-icon name="check_circle" size="20px" class="q-mr-xs" /> Pago seguro</div>
-          <!-- Social icons -->
-          <div class="col-auto">
-            <div class="row no-wrap items-center social-icons">
-              <a :href="facebookLink" target="_blank" rel="noopener" aria-label="Facebook">
-                <q-btn flat round dense color="white" class="q-pa-xs">
-                  <q-icon name="mdi-facebook" />
-                </q-btn>
-              </a>
-              <a :href="instagramLink" target="_blank" rel="noopener" class="q-ml-sm" aria-label="Instagram">
-                <q-btn flat round dense color="red" class="q-pa-xs">
-                  <q-icon name="mdi-instagram" />
-                </q-btn>
-              </a>
-              <a :href="whatsAppLink" target="_blank" rel="noopener" class="q-ml-sm" aria-label="WhatsApp" @click.prevent="openWhatsApp">
-                <q-btn flat round dense color="white" class="q-pa-xs">
-                  <q-icon name="mdi-whatsapp" />
-                </q-btn>
-              </a>
-            </div>
-          </div>
-        </div>
-        <div class="row q-gutter-sm">
-          <div class="col-auto">
-            <q-btn
-              color="white"
-              text-color="primary"
-              unelevated
-              icon="mdi-whatsapp"
-              label="Comprar por WhatsApp"
-              :href="whatsAppLink"
-              target="_blank"
-              rel="noopener"
-              @click="openWhatsApp"
-            />
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-md-5 text-center">
-        <q-icon name="storefront" size="120px" class="text-white q-mb-sm storefront-icon" />
-        <div class="text-white text-italic">¡Tu tienda de confianza!</div>
-      </div>
-    </div>
-  </section>
+
+        </section>
+
+
+
+        <!-- ✅ Componente de Contacto y Footer -->
+        <Contacto />
 
         <!-- Botón volver arriba -->
-        <q-btn v-show="showBackToTop" class="back-to-top" round color="primary" icon="keyboard_arrow_up" @click="goTop" />
+        <q-btn 
+          v-show="showBackToTop" 
+          class="back-to-top" 
+          round 
+          color="green-8" 
+          icon="keyboard_arrow_up" 
+          @click="goTop"
+          size="lg"
+        >
+          <q-tooltip>Volver arriba</q-tooltip>
+        </q-btn>
       </div>
     </q-page-container>
   </q-layout>
@@ -306,74 +212,95 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import Login from '../componentes/Login.vue'
-import CardLugar from '../componentes/Card.vue'
-import { useProductoStore } from '../stores/producto.js'
+import Banner from '../componentes/Banner.vue'
+import Contacto from '../componentes/Contacto.vue'
+import Publicacion from '../componentes/Publicacion.vue'
 import { useCategoriaStore } from '../stores/categoria.js'
-import { useMarcaStore } from '../stores/marca.js'
-import { useCarritoStore } from '../stores/carrito.js'
-import carrito from '../componentes/carrito.vue'
-import { useRouter } from 'vue-router'
+import { useFincaStore } from '../stores/finca.js'
 
-const productoStore = useProductoStore()
-const categoriaStore = useCategoriaStore()
-const marcaStore = useMarcaStore()
-const carritoStore = useCarritoStore()
+// Router
 const router = useRouter()
-const slide = ref(1)
-const autoplay = ref(true)
 
-const busqueda = ref('')
-const categoriaSeleccionada = ref('')
-const marcaSeleccionada = ref('')
-const ordenSeleccionado = ref('Relevancia')
-const opcionesOrden = [
-  'Relevancia',
-  'A-Z',
-  'Z-A'
-]
-const mostrarBuscador = ref(true)
+// Stores
+const categoriaStore = useCategoriaStore()
+const fincaStore = useFincaStore()
+
+// State
 const mostrarLogin = ref(false)
-const cargando = ref(false)
-const resultadosRef = ref(null)
 const showBackToTop = ref(false)
-// const carrito = ref([])
-const mostrarCarrito = ref(false)
 
-const categoriasOptions = computed(() => categoriaStore.categorias)
-const marcasOptions = computed(() => marcaStore.marcas)
-const productos = computed(() => productoStore.productos)
+// Carousels
+const slideGaleria = ref(1)
+const autoplayGaleria = ref(true)
 
+// Computed
+const categoriasActivas = computed(() => {
+  const categorias = categoriaStore.categorias || []
+  return categorias.filter(cat => cat.estado === 1)
+})
 
-
-function eliminarCarritoAlCerrar(e) {
-  // Solo ejecuta si la navegación NO es recarga (persisted es false)
-  if (!e.persisted) {
-    const carritoId = carritoStore.carritos.find(c => c.estado === 'activo')?._id
-    if (carritoId) {
-      carritoStore.eliminarCarrito(carritoId)
-    }
-    localStorage.removeItem('carrito')
+// Información de la finca desde fincaPublica
+const infoFinca = computed(() => {
+  const finca = fincaStore.fincaPublica
+  if (!finca) return null
+  return {
+    nombre: finca.nombre,
+    descripcion: finca.descripcion,
+    ubicacion: finca.ubicacion,
+    mision: finca.mision,
+    vision: finca.vision,
+    historia: finca.historia,
+    logo: finca.logo
   }
-}
-
-onMounted(() => {
-  window.addEventListener('pagehide', eliminarCarritoAlCerrar)
 })
 
-onBeforeUnmount(() => {
-  window.removeEventListener('pagehide', eliminarCarritoAlCerrar)
+const contactoFinca = computed(() => {
+  const finca = fincaStore.fincaPublica
+  if (!finca) return null
+  return {
+    telefono: finca.telefono,
+    whatsapp: finca.whatsapp,
+    email: finca.email,
+    direccion: finca.direccion,
+    facebook: finca.facebook,
+    instagram: finca.instagram,
+    horarioAtencion: finca.horarioAtencion
+  }
 })
 
+const galeriaFinca = computed(() => {
+  const finca = fincaStore.fincaPublica
+  return finca?.imagenesFinca || []
+})
+
+const institucionalFinca = computed(() => {
+  const finca = fincaStore.fincaPublica
+  if (!finca) return null
+  return {
+    objetivos: finca.objetivos,
+    alcance: finca.alcance,
+    certificaciones: finca.certificaciones,
+    tipoProductos: finca.tipoProductos
+  }
+})
+
+// Inicialización
 onMounted(async () => {
   try {
-    cargando.value = true
-    await categoriaStore.listarCategorias()
-    await marcaStore.listarMarcas()
-    await productoStore.listarProductos()
-  } finally {
-    cargando.value = false
+    await Promise.all([
+      fincaStore.obtenerFincaPublica(),
+      categoriaStore.listarCategorias()
+    ])
+  } catch (error) {
+    console.error('❌ Error al cargar datos iniciales:', error)
+    Notify.create({
+      type: 'negative',
+      message: 'Error al cargar la información de la finca',
+      icon: 'warning'
+    })
   }
   window.addEventListener('scroll', onScroll, { passive: true })
 })
@@ -386,281 +313,463 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
 })
 
-const categoriasTecnologia = computed(() =>
-  categoriasOptions.value.filter(cat =>
-    ['celular', 'celulares', 'tablet', 'tablets', 'accesorio', 'accesorios', 'accesorios celulares']
-      .includes(cat.nombre?.toLowerCase())
-  ).map(cat => cat._id)
-)
-
-
-const productosTecnologia = computed(() =>
-  productosOrdenados.value.filter(p =>
-    categoriasTecnologia.value.includes(p.categoria_id?._id || p.categoria_id)
-  )
-)
-
-const productosFiltrados = computed(() => {
-  const text = busqueda.value.toLowerCase().trim()
-  return productos.value.filter(p => {
-    // Categoría
-    const catId = typeof p.categoria_id === 'object' ? p.categoria_id._id : p.categoria_id
-    const selectedCatId = categoriaSeleccionada.value?._id
-    const matchCategoria = !selectedCatId || catId === selectedCatId
-
-    // Marca
-    const marcaId = typeof p.marca_id === 'object' ? p.marca_id._id : p.marca_id
-    const selectedMarcaId = marcaSeleccionada.value?._id
-    const matchMarca = !selectedMarcaId || marcaId === selectedMarcaId
-
-    // Texto
-    const matchTexto =
-      !text ||
-      p.nombre?.toLowerCase().includes(text) ||
-      p.descripcion?.toLowerCase().includes(text) ||
-      p.referencia?.toLowerCase().includes(text)
-
-    return matchCategoria && matchMarca && matchTexto
-  })
-})
-
-const productosOrdenados = computed(() => {
-  const arr = [...productosFiltrados.value]
-  if (ordenSeleccionado.value === 'A-Z') {
-    return arr.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))
-  }
-  if (ordenSeleccionado.value === 'Z-A') {
-    return arr.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || ''))
-  }
-  return arr // Relevancia (orden original)
-})
-
-function toggleBuscador() {
-  mostrarBuscador.value = !mostrarBuscador.value
-}
-
-function limpiarFiltros() {
-  busqueda.value = ''
-  categoriaSeleccionada.value = ''
-  marcaSeleccionada.value = ''
-  ordenSeleccionado.value = 'Relevancia'
-}
-
-function scrollToResultados() {
-  const el = resultadosRef.value
-  if (el?.scrollIntoView) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+// Funciones de navegación
+function verProductosPorCategoria() {
+  router.push({ name: 'productos' })
 }
 
 function goTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
-
-// WhatsApp del administrador (formato internacional sin '+', ej: 573001234567)
-const adminWhats = (import.meta?.env?.VITE_ADMIN_WHATSAPP || '573008322616').toString().trim()
-const whatsAppMessage = 'Hola, quiero comprar un producto de tu tienda. ¿Me puedes ayudar?'
-
-const whatsDigits = adminWhats.replace(/[^\d]/g, '')
-const whatsAppLink = computed(() => `https://wa.me/${whatsDigits}?text=${encodeURIComponent(whatsAppMessage)}`)
-// Enlaces de redes (puedes definir VITE_FACEBOOK_PAGE / VITE_INSTAGRAM_PAGE en .env)
-const facebookLink = (import.meta?.env?.VITE_FACEBOOK_PAGE) || 'https://www.facebook.com/LACASADELCELULARMYA/'
-const instagramLink = (import.meta?.env?.VITE_INSTAGRAM_PAGE) || 'https://www.instagram.com/lacasadelcelularmya/'
-
-function openWhatsApp() {
-  if (!/^\d{8,15}$/.test(whatsDigits)) {
-    Notify.create({ type: 'negative', message: 'Número de WhatsApp inválido. Revisa VITE_ADMIN_WHATSAPP.' })
-    return
-  }
-  const url = whatsAppLink.value
-  const win = window.open(url, '_blank', 'noopener,noreferrer')
-  if (!win) window.location.href = url
-}
-
-const productosTecnologiaFiltrados = computed(() => {
-  const text = busqueda.value.toLowerCase().trim()
-  return productos.value.filter(p => {
-    const catId = typeof p.categoria_id === 'object' ? p.categoria_id._id : p.categoria_id
-    const matchCategoria = !categoriaSeleccionada.value || catId === categoriaSeleccionada.value._id
-
-    const marcaId = typeof p.marca_id === 'object' ? p.marca_id._id : p.marca_id
-    const matchMarca = !marcaSeleccionada.value || marcaId === marcaSeleccionada.value._id
-
-    const matchTexto =
-      !text ||
-      p.nombre?.toLowerCase().includes(text) ||
-      p.descripcion?.toLowerCase().includes(text) ||
-      p.referencia?.toLowerCase().includes(text)
-
-    // Solo productos de tecnología
-    const esTecnologia = categoriasTecnologia.value.includes(catId)
-    return esTecnologia && matchCategoria && matchMarca && matchTexto
-  })
-})
-
-function agregarAlCarrito(producto) {
-  const productoParaCarrito = {
-    productoId: producto._id,
-    cantidad: 1
-  }
-  carritoStore.crearCarrito([productoParaCarrito]).then(() => {
-    carritoStore.listarCarritos()
-
-  })
-}
-
-function goCarrito() {
-  router.push({ path: '/carrito' })
-}
-
-const cantidadCarrito = computed(() => {
-  const carrito = carritoStore.carritos.find(c => c.estado === 'activo')
-  if (!carrito || !carrito.productos) return 0
-  // Suma todas las cantidades de productos en el carrito
-  return carrito.productos.reduce((sum, p) => sum + (p.cantidad || 1), 0)
-})
-
 </script>
 
 <style scoped>
-.carrito-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #d32f2f;
-  color: #fff;
-  border-radius: 50%;
-  padding: 2px 7px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-  z-index: 2;
+
+/* ===== VARIABLES CSS - Sistema de Diseño ===== */
+:root {
+  /* Paleta de colores primarios */
+  --color-primary: #2d5016;
+  --color-primary-light: #4a7c23;
+  --color-primary-dark: #1e3510;
+  
+  /* Colores secundarios */
+  --color-accent: #8fb569;
+  --color-bg-light: #f5f1e8;
+  --color-bg-lighter: #faf8f3;
+  --color-border: #e8e4da;
+  --color-border-hover: #d4cfc0;
+  
+  /* Escala de grises */
+  --color-text-primary: #2c3e50;
+  --color-text-secondary: #5a6c7d;
+  --color-text-muted: #95a5a6;
+  
+  /* Espaciado (sistema 8px) */
+  --space-xs: 0.5rem;   /* 8px */
+  --space-sm: 1rem;     /* 16px */
+  --space-md: 1.5rem;   /* 24px */
+  --space-lg: 2rem;     /* 32px */
+  --space-xl: 3rem;     /* 48px */
+  --space-2xl: 4rem;    /* 64px */
+  
+  /* Bordes redondeados */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  /* Sombras - niveles de elevación */
+  --shadow-sm: 0 2px 8px rgba(45, 80, 22, 0.08);
+  --shadow-md: 0 4px 16px rgba(45, 80, 22, 0.12);
+  --shadow-lg: 0 8px 24px rgba(45, 80, 22, 0.16);
+  --shadow-xl: 0 12px 32px rgba(45, 80, 22, 0.20);
+  
+  /* Transiciones */
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+  
+  /* Tipografía */
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Georgia', serif;
+  --line-height-tight: 1.25;
+  --line-height-base: 1.5;
+  --line-height-loose: 1.8;
 }
-/* Paleta inspirada en la imagen: verde, blanco, gris y detalles */
-.hero-banner {
-  background: linear-gradient(135deg, #386348 0%, #33dc71 80%);
-  border-radius: 14px;
-  position: relative;
+
+/* Modo oscuro (opcional) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg-light: #1a1a1a;
+    --color-bg-lighter: #2d2d2d;
+    --color-border: #404040;
+    --color-text-primary: #e8e8e8;
+    --color-text-secondary: #b8b8b8;
+  }
+}
+
+/* ===== ABOUT SECTION - Información de la finca ===== */
+/* Mobile-First: Base styles para móvil */
+.about-section {
+  padding: var(--space-lg) 0; /* 32px móvil */
+  margin-bottom: var(--space-xl);
+}
+
+.line-height-loose {
+  line-height: var(--line-height-loose);
+  color: var(--color-text-secondary);
+}
+
+/* Carousel de imágenes - Aspect ratio 16:9 controlado */
+.about-carousel {
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  aspect-ratio: 16 / 9; /* Mantiene proporción */
+  box-shadow: var(--shadow-lg);
+  transition: box-shadow var(--transition-base);
 }
-.hero-banner:after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url('../assets/tec.jpeg') center/cover no-repeat;
-  opacity: 0.25;
-  z-index: 0;
+
+.about-carousel:hover {
+  box-shadow: var(--shadow-xl);
 }
-.hero-content {
-  position: relative;
-  z-index: 1;
-  padding: 32px 18px;
-}
-.text-h4, .text-h5 {
-  color: #fff;
-  text-shadow: 0 2px 8px rgba(30,41,59,0.18);
-}
-.q-carousel__slide {
-  min-height: 220px;
+
+.carousel-slide {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 12px;
 }
-.q-carousel {
-  box-shadow: 0 2px 16px rgba(22, 163, 74, 0.08);
-  border-radius: 12px;
-  margin-bottom: 16px;
+
+/* Placeholder cuando no hay imágenes */
+.about-placeholder {
+  height: 250px; /* Altura reducida para móvil */
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, var(--color-bg-light) 0%, var(--color-border) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--color-border);
+  transition: border-color var(--transition-base);
 }
-.chip-row .q-chip {
-  background: #22c55e;
-  color: #fff;
-  font-weight: 500;
-  margin-right: 6px;
+
+.about-placeholder:hover {
+  border-color: var(--color-border-hover);
 }
-.chip-row .q-chip:hover {
-  background: #16a34a;
-  color: #fff;
+
+/* ===== CATEGORIES SECTION - Grid responsivo ===== */
+.categories-section {
+  padding: var(--space-xl) 0; /* 48px móvil */
+  background: linear-gradient(180deg, transparent 0%, var(--color-bg-light) 50%, transparent 100%);
+  position: relative;
 }
-.hero-cta .q-btn {
-  background: #22c55e;
-  color: #fff;
-  font-weight: 600;
-  border-radius: 8px;
+
+/**
+ * CATEGORY CARD - Tarjeta de categoría
+ * Decisión: Usar Flexbox para centrado vertical, min-height para consistencia
+ * Estados: default → hover → focus → active
+ */
+.category-card {
+  border-radius: var(--radius-lg);
+  background: white;
+  transition: 
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
+  border: 2px solid var(--color-border);
+  min-height: 240px; /* Altura mínima móvil */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
-.hero-cta .q-btn:hover {
-  background: #16a34a;
-}
-.input-styled, .hero-cta .q-input {
-  border-radius: 8px;
-  background: #fff;
-  color: #16a34a;
-}
-.header-toolbar {
-  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
-  color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(22,163,74,0.08);
-}
-.q-toolbar-title span {
-  font-size: 1.3rem;
-  letter-spacing: 1px;
-}
-.q-badge {
-  background: #16a34a;
-  color: #fff;
-  font-weight: 600;
-}
-.q-bar {
-  background: #22c55e;
-  color: #fff;
-  border-radius: 8px;
-}
-.q-btn {
-  min-width: 65px;
-  font-weight: 500;
-}
-.bottom-banner {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 80%);
-  border-radius: 14px;
-  color: #fff;
-}
-.bottom-banner .text-h5 {
-  color: #fff;
+
+/* Estado: Hover - Elevación y escala */
+.category-card:hover {
+  transform: translateY(-4px); /* Móvil: menor movimiento */
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-light);
 }
 
 
-.q-pa-md .q-gutter-sm {
-    padding: 0px 2px;
+/* Estado: Focus - Accesibilidad para teclado */
+.category-card:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-color: var(--color-primary);
 }
 
+/* Estado: Active - Feedback táctil */
+.category-card:active {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
 
-.q-card {
-  border-radius: 18px;
-  border: 2px solid #000000FF;
-  box-shadow: 0 4px 18px rgba(34,197,94,0.10), 0 1.5px 6px rgba(30,41,59,0.08);
-  transition: box-shadow 0.18s, transform 0.18s;
-  background: #fff;
+/* Animación del ícono dentro de la tarjeta */
+.category-card .q-icon {
+  transition: transform var(--transition-slow);
 }
-.q-card:hover {
-  box-shadow: 0 8px 32px rgba(34,197,94,0.18), 0 2px 12px rgba(30,41,59,0.12);
-  transform: translateY(-6px) scale(1.02);
-  border-color: #16a34a;
+
+.category-card:hover .q-icon {
+  transform: scale(1.05); /* Móvil: escala más sutil */
 }
-.q-chip[color="orange"] {
-  background: #f59e42 !important;
-  color: #fff !important;
+
+/* Pseudo-elemento para efecto de brillo en hover */
+.category-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left var(--transition-slow);
 }
-.q-chip[color="green"] {
-  background: #22c55e !important;
-  color: #fff !important;
+
+.category-card:hover::before {
+  left: 100%;
 }
-.q-chip[color="red"] {
-  background: #ef4444 !important;
+
+/* ===== BACK TO TOP BUTTON - Botón flotante ===== */
+/**
+ * Decisión: Fixed position con z-index alto
+ * Touch target: 56x56px (supera mínimo de 44px)
+ * Accesibilidad: Focus visible, ARIA label requerido en template
+ */
+.back-to-top {
+  position: fixed;
+  bottom: var(--space-md); /* 24px móvil */
+  right: var(--space-md);
+  z-index: 1000;
+  min-width: 48px;
+  min-height: 48px;
+  box-shadow: var(--shadow-lg);
+  transition: 
+    transform var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.back-to-top:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.back-to-top:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.back-to-top:active {
+  transform: translateY(-2px);
+}
+
+/* ===== LOADING STATE - Spinner centrado ===== */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== SECCIÓN TIPOS DE PRODUCTOS - RESPONSIVA ===== */
+.productos-section {
+  padding: var(--space-md) var(--space-sm); /* Padding reducido móvil */
+}
+
+/* Título responsivo */
+.productos-title {
+  font-size: 1.25rem; /* 20px móvil */
+  line-height: 1.4;
+}
+
+/* Chips responsivos */
+.producto-chip {
+  font-size: 0.75rem; /* 12px móvil */
+  padding: 4px 8px !important;
+  min-height: 28px;
+  transition: transform var(--transition-fast);
+}
+
+.producto-chip :deep(.q-icon) {
+  font-size: 16px; /* Ícono más pequeño móvil */
+}
+
+/* ===== CHIPS Y BADGES ===== */
+/* Asegurar touch targets mínimos en móvil */
+.q-chip {
+  min-height: 32px;
+  padding: var(--space-xs) var(--space-sm);
+  transition: transform var(--transition-fast);
+}
+
+.q-chip:hover {
+  transform: scale(1.02);
+}
+
+/* ===== RESPONSIVE DESIGN - Media Queries ===== */
+
+/* TABLET: 600px - 1023px */
+@media (min-width: 600px) {
+  .about-section {
+    padding: var(--space-2xl) 0; /* 64px tablet */
+  }
   
-  color: #fff !important;
+  .categories-section {
+    padding: var(--space-2xl) 0;
+  }
+  
+  .category-card {
+    min-height: 260px;
+  }
+  
+  .category-card:hover {
+    transform: translateY(-6px); /* Mayor elevación */
+  }
+  
+  .category-card .q-icon {
+    transition: transform var(--transition-slow);
+  }
+  
+  .category-card:hover .q-icon {
+    transform: scale(1.08);
+  }
+  
+  .about-placeholder {
+    height: 300px;
+  }
+  
+  /* Productos responsive tablet */
+  .productos-title {
+    font-size: 1.5rem; /* 24px tablet */
+  }
+  
+  .producto-chip {
+    font-size: 0.875rem; /* 14px tablet */
+    padding: 6px 12px !important;
+    min-height: 32px;
+  }
+  
+  .producto-chip :deep(.q-icon) {
+    font-size: 18px;
+  }
 }
 
+/* DESKTOP: 1024px+ */
+@media (min-width: 1024px) {
+  .about-section {
+    padding: 80px 0; /* Espaciado generoso */
+  }
+  
+  .categories-section {
+    padding: 80px 0;
+  }
+  
+  .category-card {
+    min-height: 280px;
+  }
+  
+  .category-card:hover {
+    transform: translateY(-8px); /* Máxima elevación */
+  }
+  
+  .category-card:hover .q-icon {
+    transform: scale(1.12);
+  }
+  
+  .about-placeholder {
+    height: 350px;
+  }
+  
+  .back-to-top {
+    min-width: 56px;
+    min-height: 56px;
+  }
+  
+  /* Productos responsive desktop */
+  .productos-section {
+    padding: var(--space-lg) var(--space-xl);
+  }
+  
+  .productos-title {
+    font-size: 1.75rem; /* 28px desktop */
+  }
+  
+  .producto-chip {
+    font-size: 1rem; /* 16px desktop */
+    padding: 8px 16px !important;
+    min-height: 36px;
+  }
+  
+  .producto-chip :deep(.q-icon) {
+    font-size: 20px;
+  }
+  
+  .producto-chip:hover {
+    transform: scale(1.05);
+  }
+}
 
+/* DESKTOP GRANDE: 1440px+ */
+@media (min-width: 1440px) {
+  .about-section,
+  .categories-section {
+    padding: 100px 0;
+  }
+}
 
+/* ===== ACCESIBILIDAD - Preferencias del sistema ===== */
+
+/* Reducir movimiento para usuarios sensibles */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .category-card:hover,
+  .back-to-top:hover {
+    transform: none;
+  }
+}
+
+/* Alto contraste para mejor legibilidad */
+@media (prefers-contrast: high) {
+  .category-card {
+    border-width: 3px;
+  }
+  
+  .category-card:focus-visible {
+    outline-width: 4px;
+  }
+}
+
+/* ===== UTILIDADES ===== */
+.rounded-borders {
+  border-radius: var(--radius-lg);
+}
+
+.shadow-4 {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Focus visible para todos los elementos interactivos */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/**
+ * ============================================================================
+ * NOTAS DE TESTING MANUAL
+ * ============================================================================
+ * 
+ * 1. CHROME DEVTOOLS - RESPONSIVE MODE (F12 → Toggle Device Toolbar)
+ *    - iPhone SE (375x667): Verificar touch targets ≥44px
+ *    - iPad (768x1024): Comprobar grid 2 columnas
+ *    - Desktop (1920x1080): Verificar grid 3 columnas
+ * 
+ * 2. CONTRASTE (WCAG AA):
+ *    - Text/Background: Mínimo 4.5:1
+ *    - Large Text: Mínimo 3:1
+ *    - Usar: https://webaim.org/resources/contrastchecker/
+ * 
+ * 3. NAVEGACIÓN POR TECLADO:
+ *    - Tab: Navegar entre tarjetas
+ *    - Enter/Space: Activar tarjeta
+ *    - Verificar :focus-visible en todos los elementos
+ * 
+ * 4. PERFORMANCE:
+ *    - Lighthouse: Mínimo 90 en Performance
+ *    - First Contentful Paint < 1.8s
+ *    - Largest Contentful Paint < 2.5s
+ * 
+ * 5. ACCESIBILIDAD:
+ *    - Lighthouse: Mínimo 95 en Accessibility
+ *    - Verificar atributos ARIA en template
+ *    - Screen reader: NVDA/JAWS testing
+ * 
+ * ============================================================================
+ */
 </style>

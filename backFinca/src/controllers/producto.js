@@ -7,11 +7,21 @@ const httpProductos = {
   // GET - Listar todos los productos
   getProductos: async (req, res) => {
     try {
-      const productos = await Producto.find({ estado: 1 })
+      const { estado } = req.query; // ?estado=1 | 0 | all
+      let filtro = {};
+
+      if (estado === 'all') {
+        // sin filtro de estado
+      } else if (estado === '0' || estado === '1') {
+        filtro.estado = Number(estado);
+      } else {
+        filtro.estado = 1; // default: solo activos (mantiene lógica previa)
+      }
+
+      const productos = await Producto.find(filtro)
         .populate("categoria", "nombre descripcion")
         .sort({ createdAt: -1 });
 
-      // Formatear precio para mostrar
       const productosFormateados = productos.map(prod => ({
         ...prod._doc,
         precio_formateado: new Intl.NumberFormat('es-CO', {
@@ -20,10 +30,18 @@ const httpProductos = {
         }).format(prod.precio)
       }));
 
+      // Totales (útil para panel)
+      const totalActivos = await Producto.countDocuments({ estado: 1 });
+      const totalInactivos = await Producto.countDocuments({ estado: 0 });
+
       return res.json({
         ok: true,
         productos: productosFormateados,
-        total: productosFormateados.length
+        total: productosFormateados.length,
+        meta: {
+          activos: totalActivos,
+            inactivos: totalInactivos
+        }
       });
     } catch (error) {
       console.error('Error al obtener productos:', error);
@@ -114,11 +132,11 @@ const httpProductos = {
         descripcion,
         precio,
         unidad,
+        presentacion,
         categoria,
         esOrganico,
         origen,
-        destacado,
-        descuento
+        destacado
       } = req.body;
 
       // Función para subir imagen a Cloudinary
@@ -160,13 +178,14 @@ const httpProductos = {
         descripcion: descripcion?.trim(),
         precio: parseFloat(precio),
         unidad,
+        presentacion: Number(presentacion),
         categoria,
         esOrganico: esOrganico === 'true' || esOrganico === true,
         origen: origen?.trim(),
         imagenes: imagenesArr,
         imagenPrincipal,
         destacado: destacado === 'true' || destacado === true,
-        descuento: parseFloat(descuento) || 0,
+
         estado: 1
       });
 
@@ -206,11 +225,11 @@ const httpProductos = {
         descripcion,
         precio,
         unidad,
+        presentacion,
         categoria,
         esOrganico,
         origen,
-        destacado,
-        descuento
+        destacado
       } = req.body;
 
       // Buscar producto actual
@@ -266,10 +285,10 @@ const httpProductos = {
         ...(precio && { precio: parseFloat(precio) }),
         ...(unidad && { unidad }),
         ...(categoria && { categoria }),
+        ...(presentacion && { presentacion: Number(presentacion) }),
         ...(esOrganico !== undefined && { esOrganico: esOrganico === 'true' || esOrganico === true }),
         ...(origen !== undefined && { origen: origen?.trim() }),
         ...(destacado !== undefined && { destacado: destacado === 'true' || destacado === true }),
-        ...(descuento !== undefined && { descuento: parseFloat(descuento) || 0 }),
         imagenes: imagenesArr,
         imagenPrincipal
       };
@@ -303,39 +322,95 @@ const httpProductos = {
     }
   },
 
-  // PUT - Ajustar inventario (para futuras implementaciones)
-  putAjustarInventario: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { cantidad } = req.body;
+  // DELETE - Eliminar imagen de producto
+  deleteImagenProducto: async (req, res) => {
+  try {
+    const { id, index } = req.params;
+    const imagenIndex = parseInt(index);
 
-      const producto = await Producto.findById(id);
-      if (!producto) {
-        return res.status(404).json({
-          ok: false,
-          msg: "Producto no encontrado"
-        });
-      }
-
-      // Por ahora solo devolver mensaje, se puede implementar stock después
-      res.json({
-        ok: true,
-        msg: "Funcionalidad de inventario en desarrollo",
-        producto: {
-          ...producto._doc,
-          stock: cantidad // Simulado
-        }
-      });
-
-    } catch (error) {
-      console.error('Error al ajustar inventario:', error);
-      res.status(500).json({
+    // Validar índice
+    if (isNaN(imagenIndex) || imagenIndex < 0) {
+      return res.status(400).json({
         ok: false,
-        msg: "Error al ajustar inventario",
-        error: error.message
+        msg: 'Índice de imagen inválido'
       });
     }
-  },
+
+    // Buscar el producto por ID
+    const producto = await Producto.findById(id);
+    
+    if (!producto) {
+      return res.status(404).json({
+        ok: false,
+        msg: 'Producto no encontrado'
+      });
+    }
+
+    // Verificar que el producto tenga imágenes
+    if (!producto.imagenes || producto.imagenes.length === 0) {
+      return res.status(400).json({
+        ok: false,
+        msg: 'El producto no tiene imágenes'
+      });
+    }
+
+    // Verificar que el índice esté dentro del rango
+    if (imagenIndex >= producto.imagenes.length) {
+      return res.status(400).json({
+        ok: false,
+        msg: `Índice de imagen fuera de rango. El producto tiene ${producto.imagenes.length} imagen(es)`
+      });
+    }
+
+    // Obtener la URL de la imagen a eliminar
+    const imagenAEliminar = producto.imagenes[imagenIndex];
+
+    // Eliminar imagen del array
+    producto.imagenes.splice(imagenIndex, 1);
+
+    // Si la imagen eliminada era la principal, asignar la primera imagen disponible
+    if (producto.imagenPrincipal === imagenAEliminar) {
+      producto.imagenPrincipal = producto.imagenes.length > 0 ? producto.imagenes[0] : null;
+    }
+
+    // Guardar cambios
+    await producto.save();
+
+    // Opcional: Eliminar imagen de Cloudinary
+    try {
+      const urlParts = imagenAEliminar.split('/');
+      const filename = urlParts[urlParts.length - 1];
+      const publicId = filename.split('.')[0];
+      const folder = urlParts[urlParts.length - 2];
+      const fullPublicId = `${folder}/${publicId}`;
+      
+      await cloudinary.uploader.destroy(fullPublicId);
+    } catch (cloudinaryError) {
+      console.error('Error al eliminar de Cloudinary:', cloudinaryError);
+      // No devolvemos error porque la imagen ya se eliminó de la BD
+    }
+
+    res.json({
+      ok: true,
+      msg: 'Imagen eliminada exitosamente',
+      producto: {
+        _id: producto._id,
+        nombre: producto.nombre,
+        imagenes: producto.imagenes,
+        imagenPrincipal: producto.imagenPrincipal,
+        totalImagenes: producto.imagenes.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al eliminar imagen:', error);
+    res.status(500).json({
+      ok: false,
+      msg: 'Error al eliminar imagen',
+      error: error.message
+    });
+  }
+},
 
   // PUT - Activar producto
   putActivarProducto: async (req, res) => {

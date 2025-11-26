@@ -5,9 +5,10 @@
       class="q-pa-lg q-mb-xl q-pa-sm q-card-responsive"
       style="position: relative;"
     >
-      <q-card-section class="row items-center q-pb-none">
-        <q-avatar icon="login" size="56px" class="q-mr-md" color="white" text-color="primary"/>
-        <div class="text-h6">Iniciar Sesión </div>
+      <q-card-section class="text-center q-pb-none">
+        <q-avatar icon="agriculture" size="80px" class="q-mb-sm agronomist-avatar" color="green-7" text-color="white"/>
+        <div class="text-h5 text-weight-bold text-green-8">Portal Agrónomo</div>
+        <div class="text-caption text-grey-6 q-mt-xs">Sistema de Gestión Agrícola</div>
         <q-btn
           flat
           round
@@ -18,52 +19,60 @@
         />
       </q-card-section>
 
-      <q-card-section class="q-mt-md">
+      <q-card-section class="q-mt-md q-px-lg">
         <q-input
           v-model="email"
-          filled
-          label="Nombre de Usuario"
+          outlined
+          label="Usuario"
           dense
           clearable
-          hint="Ingrese su nombre de usuario"
-          prefix-icon="person"
+          class="q-mb-md agronomist-input"
           :rules="[val => !!val || 'Este campo es requerido']"
-          class="q-mb-md"
-        />
+        >
+          <template v-slot:prepend>
+            <q-icon name="person" color="green-7" />
+          </template>
+        </q-input>
         <q-input
           v-model="password"
-          filled
+          outlined
           label="Contraseña"
           :type="showPassword ? 'text' : 'password'"
           dense
-          class="q-mt-md"
-          clearable
-          hint="Ingrese su contraseña"
-          prefix-icon="lock"
+          class="agronomist-input"
           :rules="[val => !!val || 'Este campo es requerido']"
         >
+          <template v-slot:prepend>
+            <q-icon name="lock" color="green-7" />
+          </template>
           <template v-slot:append>
             <q-icon
               :name="showPassword ? 'visibility_off' : 'visibility'"
               class="cursor-pointer"
+              color="green-6"
               @click="showPassword = !showPassword"
             />
           </template>
         </q-input>
       </q-card-section>
 
-      <q-card-actions align="right" class="q-mt-md">
+      <q-card-actions align="center" class="q-mt-md q-px-lg q-pb-lg">
         <q-btn 
           :disable="loading"
           @click="login" 
-          color="primary" 
-          class="full-width"
+          unelevated
+          rounded
+          color="green-7"
+          text-color="white"
+          class="full-width agronomist-btn"
+          size="md"
         >
           <template v-if="loading">
             <q-spinner-dots color="white" size="20px" />
           </template>
           <template v-else>
-            Iniciar Sesión
+            <q-icon name="login" size="20px" class="q-mr-sm" />
+            Acceder al Sistema
           </template>
         </q-btn>
       </q-card-actions>
@@ -173,27 +182,53 @@ function onRegistered(data) {
 }
 
 .q-card {
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
-  border-radius: 22px;
-  border: 2px solid #60432FFF;
-  background: #fff;
+  box-shadow: 0 10px 40px 0 rgba(76, 175, 80, 0.2);
+  border-radius: 20px;
+  border: 3px solid #66BB6A;
+  background: linear-gradient(135deg, #ffffff 0%, #f1f8f4 100%);
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
   max-height: 95vh;
   overflow: auto;
   margin-bottom: 8px;
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition: all 0.3s ease;
 }
 .q-card:hover {
-  box-shadow: 0 12px 36px 0 rgba(31, 38, 135, 0.22);
-  border-color: #a5b4fc;
-}
-.q-card__section--vert {
-  padding: 0px !important;
+  box-shadow: 0 15px 50px 0 rgba(76, 175, 80, 0.3);
+  border-color: #4CAF50;
+  transform: translateY(-2px);
 }
 
-.q-input__inner {
-  border-radius: 8px;
+.agronomist-avatar {
+  border: 4px solid #81C784;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.agronomist-input {
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.agronomist-input :deep(.q-field__control) {
+  border-radius: 12px;
+}
+
+.agronomist-input:hover {
+  transform: translateY(-1px);
+}
+
+.agronomist-btn {
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.25);
+}
+
+.agronomist-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.35);
 }
 
 .full-width {
@@ -203,23 +238,33 @@ function onRegistered(data) {
 /* boton x modal */
 .close-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 12px;
+  right: 12px;
   z-index: 2;
-  color: #888;
+  color: #66BB6A;
   background: white;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
   border-radius: 50%;
-  border: 1px solid #e0e7ff;
-  transition: color 0.2s, background 0.2s, border-color 0.2s;
+  border: 2px solid #C8E6C9;
+  transition: all 0.2s ease;
 }
 .close-btn:hover {
-  color: #f857a6;
-  background: #f5f5f5;
-  border-color: #f857a6;
+  color: white;
+  background: #4CAF50;
+  border-color: #4CAF50;
+  transform: rotate(90deg);
 }
 
-/* SOLUCIÓN FINAL: Rompe el bug de .row > * de cualquier global solo en el login */
+/* Enlaces de recuperación */
+.q-btn--flat {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.q-btn--flat:hover {
+  background: rgba(76, 175, 80, 0.08);
+}
+
 q-mb-xl {
   margin-bottom: 0px !important;
 }

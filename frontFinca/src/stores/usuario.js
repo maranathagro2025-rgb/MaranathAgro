@@ -4,7 +4,7 @@ import axios from 'axios'
 import { Notify } from "quasar"
 
 // URL base global
-const API_URL = "http://localhost:1598/api"
+const API_URL = "http://localhost:9815/api"
 
 export const useStoreUsuarios = defineStore('Usuario', () => {
   const validacion = ref('')

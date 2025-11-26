@@ -11,7 +11,6 @@ const router = express.Router();
 
 // GET - Obtener información de la finca (administración)
 router.get('/info', [
-    validarJWT,
     validarCampos
 ], httpFincas.getFinca);
 
@@ -43,7 +42,6 @@ router.post('/crear', [
     check('facebook', 'URL de Facebook inválida').optional().custom(FincaHelper.validarFacebook),
     check('whatsapp', 'Número de WhatsApp inválido').optional().custom(FincaHelper.validarWhatsapp),
     check('horarioAtencion', 'Horario de atención muy largo').optional().custom(FincaHelper.validarHorarioAtencion),
-    check('objetivos', 'Objetivos inválidos').optional().custom(FincaHelper.validarObjetivos),
     check('tipoProductos', 'Tipos de productos inválidos').optional().custom(FincaHelper.validarTipoProductos),
     check('certificaciones', 'Certificaciones inválidas').optional().custom(FincaHelper.validarCertificaciones),
     validarCampos
@@ -60,20 +58,7 @@ router.put('/actualizar', [
     validarCampos
 ], httpFincas.putActualizarFinca);
 
-// PUT - Agregar objetivo
-router.put('/objetivo/agregar', [
-    validarJWT,
-    check('objetivo', 'El objetivo es obligatorio').not().isEmpty(),
-    check('objetivo', 'El objetivo debe tener entre 5 y 200 caracteres').isLength({ min: 5, max: 200 }),
-    validarCampos
-], httpFincas.putAgregarObjetivo);
 
-// DELETE - Eliminar objetivo por índice
-router.delete('/objetivo/:index', [
-    validarJWT,
-    check('index', 'Índice inválido').isInt({ min: 0 }),
-    validarCampos
-], httpFincas.deleteObjetivo);
 
 // DELETE - Eliminar imagen de finca por índice
 router.delete('/imagen/:index', [
@@ -87,116 +72,21 @@ router.delete('/imagen/:index', [
 // GET - Solo información básica (nombre, ubicación, descripción)
 router.get('/basica', [
     validarCampos
-], async (req, res) => {
-    try {
-        const finca = await require('../models/finca').findOne({ estado: 1 })
-            .select('nombre ubicacion descripcion logo');
-        
-        if (!finca) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'No se encontró información básica de la finca'
-            });
-        }
-
-        res.json({
-            ok: true,
-            finca
-        });
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            msg: 'Error interno del servidor',
-            error: error.message
-        });
-    }
-});
+], httpFincas.getFincaBasica);
 
 // GET - Solo información de contacto
 router.get('/contacto', [
     validarCampos
-], async (req, res) => {
-    try {
-        const finca = await require('../models/finca').findOne({ estado: 1 })
-            .select('telefono email direccion instagram facebook whatsapp horarioAtencion');
-        
-        if (!finca) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'No se encontró información de contacto'
-            });
-        }
-
-        res.json({
-            ok: true,
-            contacto: finca
-        });
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            msg: 'Error interno del servidor',
-            error: error.message
-        });
-    }
-});
+], httpFincas.getFincaContacto);
 
 // GET - Solo información institucional
 router.get('/institucional', [
     validarCampos
-], async (req, res) => {
-    try {
-        const finca = await require('../models/finca').findOne({ estado: 1 })
-            .select('mision vision objetivos alcance historia certificaciones');
-        
-        if (!finca) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'No se encontró información institucional'
-            });
-        }
-
-        res.json({
-            ok: true,
-            institucional: finca
-        });
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            msg: 'Error interno del servidor',
-            error: error.message
-        });
-    }
-});
+], httpFincas.getFincaInstitucional);
 
 // GET - Solo galería de imágenes
 router.get('/galeria', [
     validarCampos
-], async (req, res) => {
-    try {
-        const finca = await require('../models/finca').findOne({ estado: 1 })
-            .select('logo imagenesFinca');
-        
-        if (!finca) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'No se encontró galería de la finca'
-            });
-        }
-
-        res.json({
-            ok: true,
-            galeria: {
-                logo: finca.logo,
-                imagenes: finca.imagenesFinca || []
-            }
-        });
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            msg: 'Error interno del servidor',
-            error: error.message
-        });
-    }
-});
+], httpFincas.getFincaGaleria);
 
 module.exports = router;

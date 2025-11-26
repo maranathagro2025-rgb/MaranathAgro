@@ -55,7 +55,6 @@ const httpCategorias = {
         nombre, 
         descripcion, 
         icono, 
-        color = '#4CAF50', 
         orden = 0 
       } = req.body;
 
@@ -63,7 +62,6 @@ const httpCategorias = {
         nombre: nombre.trim(),
         descripcion: descripcion?.trim(),
         icono: icono?.trim(),
-        color,
         orden: parseInt(orden) || 0,
         estado: 1
       });
@@ -101,7 +99,6 @@ const httpCategorias = {
         nombre, 
         descripcion, 
         icono, 
-        color, 
         orden 
       } = req.body;
 
@@ -110,7 +107,6 @@ const httpCategorias = {
       if (nombre) updateData.nombre = nombre.trim();
       if (descripcion !== undefined) updateData.descripcion = descripcion?.trim();
       if (icono !== undefined) updateData.icono = icono?.trim();
-      if (color) updateData.color = color;
       if (orden !== undefined) updateData.orden = parseInt(orden) || 0;
 
       const categoria = await Categoria.findByIdAndUpdate(

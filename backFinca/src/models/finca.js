@@ -13,8 +13,21 @@ const FincaSchema = new mongoose.Schema({
   alcance: { type: String },
   
   // Información de contacto
-  telefono: { type: String },
-  email: { type: String },
+  email: { 
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Email inválido']
+  },
+  
+  // Mejorar teléfono
+  telefono: { 
+    type: String,
+    required: true,
+    trim: true,
+  },
+  
   direccion: { type: String },
   
   // Redes sociales

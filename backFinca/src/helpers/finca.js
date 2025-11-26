@@ -77,25 +77,6 @@ const FincaHelper = {
     return true;
   },
 
-  // Validar longitud de arrays
-  validarObjetivos: (objetivos) => {
-    if (objetivos && Array.isArray(objetivos)) {
-      if (objetivos.length > 10) {
-        throw new Error('Máximo 10 objetivos permitidos');
-      }
-      
-      for (let objetivo of objetivos) {
-        if (typeof objetivo !== 'string' || objetivo.trim().length === 0) {
-          throw new Error('Cada objetivo debe ser un texto válido');
-        }
-        if (objetivo.length > 200) {
-          throw new Error('Cada objetivo debe tener máximo 200 caracteres');
-        }
-      }
-    }
-    return true;
-  },
-
   // Validar tipos de productos
   validarTipoProductos: (tipoProductos) => {
     if (tipoProductos && Array.isArray(tipoProductos)) {
