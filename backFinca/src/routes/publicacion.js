@@ -57,7 +57,7 @@ router.delete('/imagen/:id/:index', [
 
 // Activar publicación
 router.put("/activar/:id", [
-    validarJWT,
+    // validarJWT,
     check('id', 'No es un ID válido').isMongoId(),
     check('id').custom(publicacionHelper.existePublicacionPorId),
     validarCampos

@@ -6,24 +6,27 @@ const httpPublicaciones = {
 
   // GET - Listar todas las publicaciones
   getPublicaciones: async (req, res) => {
-    try {
-      const publicaciones = await Publicacion.find({ estado: 1 })
-        .sort({ fechaPublicacion: -1 });
+  try {
+    const { estado } = req.query; // ?estado=1 o ?estado=0
+    const filtro = estado !== undefined ? { estado: parseInt(estado) } : {};
+    
+    const publicaciones = await Publicacion.find(filtro)
+      .sort({ fechaPublicacion: -1 });
 
-      return res.json({
-        ok: true,
-        publicaciones,
-        total: publicaciones.length
-      });
-    } catch (error) {
-      console.error('Error al obtener publicaciones:', error);
-      return res.status(500).json({
-        ok: false,
-        msg: 'Error interno del servidor',
-        error: error.message
-      });
-    }
-  },
+    return res.json({
+      ok: true,
+      publicaciones,
+      total: publicaciones.length
+    });
+  } catch (error) {
+    console.error('Error al obtener publicaciones:', error);
+    return res.status(500).json({
+      ok: false,
+      msg: 'Error interno del servidor',
+      error: error.message
+    });
+  }
+},
 
 
 

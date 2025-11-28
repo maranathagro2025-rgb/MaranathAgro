@@ -574,8 +574,11 @@ async function activarPublicacion() {
   if (id.value) {
     const res = await publicacionStore.activarPublicacion(id.value)
     if (res) {
-      await publicacionStore.listarPublicaciones()
-      rows.value = publicacionStore.publicaciones
+      // Actualizar el estado localmente sin recargar toda la lista
+      const index = rows.value.findIndex(item => item._id === id.value)
+      if (index !== -1) {
+        rows.value[index].estado = 1
+      }
     }
   }
 }
@@ -589,8 +592,11 @@ async function desactivarPublicacion() {
   if (id.value) {
     const res = await publicacionStore.desactivarPublicacion(id.value)
     if (res) {
-      await publicacionStore.listarPublicaciones()
-      rows.value = publicacionStore.publicaciones
+      // Actualizar el estado localmente sin recargar toda la lista
+      const index = rows.value.findIndex(item => item._id === id.value)
+      if (index !== -1) {
+        rows.value[index].estado = 0
+      }
     }
   }
 }
