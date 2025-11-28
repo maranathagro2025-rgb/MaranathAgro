@@ -34,7 +34,7 @@
               rounded
               icon="mdi-whatsapp"
               :label="isMobile ? 'WhatsApp' : contactoFinca.whatsapp"
-              :href="`https://wa.me/${contactoFinca.whatsapp.replace(/[^\d]/g, '')}`"
+              :href="whatsappLink"
               target="_blank"
               rel="noopener noreferrer"
               class="contact-btn full-width"
@@ -280,6 +280,18 @@ const contactoFinca = computed(() => {
     instagram: finca.instagram,
     horarioAtencion: finca.horarioAtencion
   }
+})
+
+// Computed - Link de WhatsApp con mensaje predeterminado
+const whatsappLink = computed(() => {
+  if (!contactoFinca.value?.whatsapp) return '#'
+  
+  const phoneNumber = contactoFinca.value.whatsapp.replace(/[^\d]/g, '')
+  const message = encodeURIComponent(
+    '¡Hola! 👋 Me gustaría obtener más información sobre la Finca Maranatha y sus productos agropecuarios. ¿Podrían ayudarme? 🌱'
+  )
+  
+  return `https://wa.me/${phoneNumber}?text=${message}`
 })
 
 // Computed - Detección de breakpoints
