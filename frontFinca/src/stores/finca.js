@@ -3,7 +3,7 @@ import { ref } from "vue";
 import axios from "axios";
 import { Notify } from "quasar";
 
-const API_URL = "http://localhost:9815/api/finca";
+const API_URL = "https://maranathagro.onrender.com/api/finca";
 
 export const useFincaStore = defineStore("finca", () => {
   const finca = ref(null);

@@ -4,7 +4,7 @@ import axios from "axios";
 import { Notify } from "quasar";
 import { useStoreUsuarios } from "./usuario.js"; // Importa el store de usuario
 
-const API_URL = "http://localhost:9815/api/categoria";
+const API_URL = "https://maranathagro.onrender.com/api/categoria";
 
 export const useCategoriaStore = defineStore("categoria", () => {
   const categorias = ref([]);

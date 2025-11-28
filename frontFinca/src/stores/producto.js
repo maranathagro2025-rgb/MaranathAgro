@@ -3,7 +3,7 @@ import { ref } from "vue";
 import axios from "axios";
 import { Notify } from "quasar";
 
-const API_URL = "http://localhost:9815/api/producto";
+const API_URL = "https://maranathagro.onrender.com/api/producto";
 
 export const useProductoStore = defineStore("producto", () => {
   const productos = ref([]);
