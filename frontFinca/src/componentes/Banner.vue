@@ -75,9 +75,9 @@ function navegarAProductos() {
 <style scoped>
 /* Header Toolbar */
 .header-toolbar {
-  background: linear-gradient(135deg, #2d5016 0%, #4a7c23 100%);
+  background: linear-gradient(135deg, #5a8a47 0%, #6b9e5a 45%, #ff9d5c 55%, #6b9e5a 100%);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(45, 80, 22, 0.2);
+  box-shadow: 0 4px 16px rgba(107, 158, 90, 0.5), 0 2px 8px rgba(255, 157, 92, 0.3);
 }
 
 .header-toolbar .q-toolbar-title span {
@@ -88,7 +88,7 @@ function navegarAProductos() {
 
 /* Hero Banner */
 .hero-banner {
-  background: linear-gradient(135deg, rgba(45, 80, 22, 0.95) 0%, rgba(74, 124, 35, 0.9) 100%),
+  background: linear-gradient(135deg, rgba(158, 146, 90, 0.2) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 157, 92, 0.2) 100%),
               url('../assets/finca-banner.jpg') center/cover no-repeat;
   border-radius: 16px;
   min-height: 500px;
@@ -97,15 +97,16 @@ function navegarAProductos() {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 32px rgba(45, 80, 22, 0.3);
+  box-shadow: 0 8px 32px rgba(255, 157, 92, 0.5);
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(45, 80, 22, 0.85) 0%, rgba(74, 124, 35, 0.75) 100%);
+  background: linear-gradient(135deg, rgba(90, 138, 71, 0.85) 0%, rgba(107, 158, 90, 0.75) 35%, rgba(255, 157, 92, 0.45) 55%, rgba(107, 158, 90, 0.80) 100%);
   z-index: 1;
 }
+
 
 .hero-content {
   position: relative;
@@ -115,40 +116,54 @@ function navegarAProductos() {
 }
 
 .hero-icon {
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 4px 12px rgba(255, 157, 92, 0.7));
   animation: float 3s ease-in-out infinite;
+  background: white;
+  padding: 10px;
+  border: 4px solid #ff9d5c;
+  box-shadow: 0 6px 20px rgba(255, 157, 92, 0.5), inset 0 2px 6px rgba(255, 255, 255, 0.8);
 }
+
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-12px); }
 }
 
 .hero-title {
   font-family: 'Georgia', serif;
   font-size: 3.5rem;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  text-shadow: 0 3px 6px rgba(90, 138, 71, 0.8), 
+               0 6px 20px rgba(255, 157, 92, 0.6),
+               0 1px 3px rgba(0, 0, 0, 0.4);
   letter-spacing: 2px;
 }
 
 .hero-subtitle {
   font-family: 'Georgia', serif;
   font-weight: 300;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 8px rgba(107, 158, 90, 0.7), 0 1px 3px rgba(0, 0, 0, 0.3);
   letter-spacing: 1px;
+  color: #ffe8d6;
 }
 
 .hero-btn {
   padding: 12px 32px;
   font-size: 1.1rem;
   font-weight: 600;
-  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3);
-  transition: transform 0.3s, box-shadow 0.3s;
+  background: linear-gradient(135deg, #ffffff 0%, #fff5ed 50%, #ffe8d6 100%) !important;
+  color: #6b9e5a !important;
+  border: 3px solid #ff9d5c;
+  box-shadow: 0 4px 20px rgba(255, 157, 92, 0.6);
+  transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
 }
 
 .hero-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 24px rgba(255, 255, 255, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 28px rgba(255, 157, 92, 0.8);
+  background: linear-gradient(135deg, #ffe8d6 0%, #ffcfad 50%, #ff9d5c 100%) !important;
+  color: #ffffff !important;
 }
 
 /* Nav Button */

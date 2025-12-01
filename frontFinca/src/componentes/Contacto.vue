@@ -390,7 +390,7 @@ body.body--dark {
 .contact-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(45, 80, 22, 0.9) 0%, rgba(74, 124, 35, 0.85) 100%);
+  background: linear-gradient(135deg, rgba(90, 138, 71, 0.85) 0%, rgba(107, 158, 90, 0.75) 35%, rgba(255, 157, 92, 0.45) 55%, rgba(107, 158, 90, 0.80) 100%);
   z-index: 1;
 }
 
@@ -417,21 +417,26 @@ body.body--dark {
 
 /* Botones de contacto */
 .contact-btn {
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
   font-weight: 600;
   font-size: 0.813rem; /* Mobile: 13px - más pequeño */
   letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  box-shadow: 0 2px 8px var(--btn-shadow);
+  background: linear-gradient(135deg, #ffffff 0%, #fff5ed 50%, #ffe8d6 100%) !important;
+  color: #6b9e5a !important;
+  border: 3px solid #ff9d5c !important;
+  box-shadow: 0 4px 20px rgba(255, 157, 92, 0.6);
   min-height: 40px; /* Altura mínima uniforme */
   height: 40px; /* Altura fija en móvil */
 }
 
 .contact-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--btn-hover-shadow);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 28px rgba(255, 157, 92, 0.8);
+  background: linear-gradient(135deg, #ffe8d6 0%, #ffcfad 50%, #ff9d5c 100%) !important;
+  color: #ffffff !important;
 }
 
 .contact-btn:active {
@@ -441,18 +446,26 @@ body.body--dark {
 /* Botones sociales */
 .social-btn {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 2px 8px var(--btn-shadow);
+  background: linear-gradient(135deg, #ffffff 0%, #fff5ed 100%) !important;
+  color: #6b9e5a !important;
+  border: 2px solid #ff9d5c !important;
+  box-shadow: 0 4px 16px rgba(255, 157, 92, 0.5);
 }
 
 .social-btn:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 12px var(--btn-hover-shadow);
+  transform: translateY(-3px) scale(1.08);
+  box-shadow: 0 6px 24px rgba(255, 157, 92, 0.7);
+  background: linear-gradient(135deg, #ffe8d6 0%, #ff9d5c 100%) !important;
+  color: #ffffff !important;
 }
 
 /* Logo con animación */
 .logo-avatar {
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 4px 12px rgba(255, 157, 92, 0.7));
   animation: float 3s ease-in-out infinite;
+  border: 3px solid #ff9d5c;
+  background: white;
+  padding: 4px;
 }
 
 @keyframes float {
@@ -474,7 +487,10 @@ body.body--dark {
 
 .footer-title {
   font-size: 1rem; /* Mobile: 16px */
-  color: #4a7c23;
+  background: linear-gradient(135deg, #6b9e5a 0%, #ff9d5c 50%, #6b9e5a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   display: flex;
   align-items: center;
   justify-content: center;
